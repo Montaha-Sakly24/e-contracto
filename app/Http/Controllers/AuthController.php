@@ -48,4 +48,34 @@ class AuthController extends Controller
 
         return response()->json($response, 200);
     }
+
+    public function login(Request $request)
+{
+    // Tentative d'authentification avec les informations fournies
+    if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+        $user = Auth::user();
+
+        // Création du jeton d'accès
+        $token = $user->createToken('MyApp')->plainTextToken;
+
+        $response = [
+            'success' => true,
+            'data' => [
+                'token' => $token,
+                'name' => $user->name
+            ],
+            'message' => 'User logged in successfully'
+        ];
+        return response()->json($response, 200);
+    } else {
+        // Échec de l'authentification
+        $response = [
+            'success' => false,
+            'message' => 'Unauthorized'
+        ];
+        return response()->json($response, 401); // 401 signifie que l'accès est refusé
+    }
+}
+
+
 }
