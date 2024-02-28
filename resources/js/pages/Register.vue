@@ -11,7 +11,14 @@
             max-width="228"
             src="https://cdn.vuetifyjs.com/docs/images/logos/vuetify-logo-v3-slim-text-light.svg"
         ></v-img>
-        <p class="text-danger" v-if="error">{{ error }}</p>
+
+        <p
+            class="error-message text-center"
+            v-for="error in errors"
+            :key="error"
+        >
+            <span v-for="err in error" :key="err">{{ err }}</span>
+        </p>
         <v-card
             class="mx-auto pa-12 pb-8"
             elevation="8"
@@ -31,6 +38,7 @@
                     v-model="form.name"
                 ></v-text-field>
 
+                <!--
                 <v-text-field
                     density="compact"
                     placeholder="Last Name"
@@ -38,6 +46,7 @@
                     variant="outlined"
                     v-model="form.surname"
                 ></v-text-field>
+                -->
 
                 <v-text-field
                     density="compact"
@@ -82,9 +91,8 @@
                 <v-card-text class="text-center">
                     <a
                         class="text-blue text-decoration-none"
-                        href="#"
+                        href="/login"
                         rel="noopener noreferrer"
-                        target="_blank"
                     >
                         Already have an account? Log in
                         <v-icon icon="mdi-chevron-right"></v-icon>
@@ -97,12 +105,14 @@
 <script>
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
+import { useStore } from "vuex";
 export default {
     data: () => ({
         visible: false,
     }),
     setup() {
         const router = useRouter();
+        const store = useStore();
 
         let form = reactive({
             name: "",
@@ -111,27 +121,32 @@ export default {
             c_password: "",
         });
 
-        let error = ref("");
+        let errors = ref([]);
 
         const signUp = async () => {
             await axios
                 .post("/api/register", form)
                 .then((res) => {
                     if (res.data.success) {
-                        //store.dispatch("setToken", res.data.data.token);
+                        store.dispatch("setToken", res.data.data.token);
                         router.push({ name: "Login" });
                     }
                 })
                 .catch((e) => {
-                    error.value = e.response.data.message;
+                    errors.value = e.response.data.message;
                 });
         };
 
         return {
             form,
             signUp,
-            error,
+            errors,
         };
     },
 };
 </script>
+<style scoped>
+.error-message {
+    color: red;
+}
+</style>

@@ -71,9 +71,8 @@
                 <v-card-text class="text-center">
                     <a
                         class="text-blue text-decoration-none"
-                        href="#"
+                        href="/register"
                         rel="noopener noreferrer"
-                        target="_blank"
                     >
                         Sign up now <v-icon icon="mdi-chevron-right"></v-icon>
                     </a>
@@ -85,12 +84,14 @@
 <script>
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
+import { useStore } from "vuex";
 export default {
     data: () => ({
         visible: false,
     }),
     setup() {
         const router = useRouter();
+        const store = useStore();
 
         let form = reactive({
             email: "",
@@ -102,7 +103,7 @@ export default {
         const login = async () => {
             await axios.post("/api/login", form).then((res) => {
                 if (res.data.success) {
-                    //store.dispatch("setToken", res.data.data.token);
+                    store.dispatch("setToken", res.data.data.token);
                     router.push({ name: "Dashboard" });
                     console.log("User logged in successfully");
                 } else {

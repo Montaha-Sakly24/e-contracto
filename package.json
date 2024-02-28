@@ -18,6 +18,7 @@
     "dependencies": {
         "vue-loader": "^17.4.2",
         "vue-router": "^4.3.0",
-        "vuetify": "^3.5.6"
+        "vuetify": "^3.5.6",
+        "vuex": "^4.0.2"
     }
 }
