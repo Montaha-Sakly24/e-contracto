@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\ContractCategoryController;
 
 
@@ -26,6 +27,13 @@ Route::controller(AuthController::class)->group(function(){
     Route::post('register','register');
 });
 
+Route::prefix('users')->group(function () {
+    Route::post('/', [UserController::class, 'createUser']);
+    Route::get('/', [UserController::class, 'showlisteUser']);
+    Route::get('/{user}', [UserController::class, 'showUserProfil']);
+    Route::put('/{user}', [UserController::class, 'updateUserProfil']);
+    Route::delete('/{user}', [UserController::class, 'deleteUserProfil']);
+});
 
 // l code hadha l kol najem n3wdhu b une seule ligne tasna3homlk lkol automatiquement:
 //Route::apiResource('categories', 'ContractCategoryController');
