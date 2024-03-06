@@ -49,6 +49,8 @@ class AuthController extends Controller
         return response()->json($response, 200);
     }
 
+
+
     public function login(Request $request)
 {
     // Tentative d'authentification avec les informations fournies

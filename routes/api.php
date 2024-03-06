@@ -3,6 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ContractCategoryController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -22,4 +24,15 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::controller(AuthController::class)->group(function(){
     Route::post('login','login');
     Route::post('register','register');
+});
+
+
+// l code hadha l kol najem n3wdhu b une seule ligne tasna3homlk lkol automatiquement:
+//Route::apiResource('categories', 'ContractCategoryController');
+Route::prefix('categories')->group(function () {
+    Route::post('/', [ContractCategoryController::class, 'createCategory']);
+    Route::get('/', [ContractCategoryController::class, 'showlisteCategories']);
+    Route::get('/{category}', [ContractCategoryController::class, 'showCategory']);
+    Route::put('/{category}', [ContractCategoryController::class, 'updateCategory']);
+    Route::delete('/{category}', [ContractCategoryController::class, 'deleteCategory']);
 });
