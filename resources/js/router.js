@@ -4,6 +4,7 @@ import Register from "./pages/Register.vue";
 import Home from "./pages/Home.vue";
 import Dashboard from "./pages/Dashboard.vue";
 import store from "./store/index";
+import category from "./ContractCategories/category.vue";
 
 const routes = [
     {
@@ -32,6 +33,14 @@ const routes = [
         path: "/dashboard",
         name: "Dashboard",
         component: Dashboard,
+        meta: {
+            requiresAuth: true,
+        },
+    },
+    {
+        path: "/categories",
+        name: "ContractCategories",
+        component: category,
         meta: {
             requiresAuth: true,
         },

@@ -37,29 +37,6 @@ class UserController extends Controller
     }
 
 
-    //Modifier une catégorie de contrat
-    public function updateUserProfil(Request $request,User $user)
-    {
-
-
-        $validated = $request->validate([
-            'title' => 'required|max:255',
-            'description' =>'required',
-        ]);
-        // Vérifie si la catégorie de contrat existe
-        if (!$user) {
-            return response()->json(['error' => 'Catégorie de contrat non trouvée'], 404);
-        }
-
-        $success = $user->update($validated);
-        if ($success) {
-            return response()->json($user,200);
-        } else {
-            return response()->json(['error' => 'Échec de la mise à jour de la catégorie de contrat'], 500);
-        }
-    }
-
-
     //Supprimer une catégorie de contrat
     public function deleteUserProfil(User $user)
     {

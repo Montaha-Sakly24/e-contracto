@@ -7,6 +7,17 @@ use Illuminate\Http\Request;
 
 class ContractCategoryController extends Controller
 {
+   /* public function __construct()
+    {
+       $this->middleware('auth');
+       $this->middleware('permission:create-contract-category|edit-contract-category|delete-contract-category', ['only' => ['showlisteCategories','showCategory']]);
+       $this->middleware('permission:create-contract-category', ['only' => ['createCategory']]);
+       $this->middleware('permission:edit-contract-category', ['only' => ['updateCategory']]);
+       $this->middleware('permission:delete-contract-category', ['only' => ['deleteCategory']]);
+    }
+*/
+
+
     //Céer une nouvelle catégorie de contrat
     public function createCategory(Request $request)
     {
@@ -45,16 +56,13 @@ class ContractCategoryController extends Controller
             'description' =>'required',
         ]);
         // Vérifie si la catégorie de contrat existe
-        if (!$category) {
+        if (is_null($category)) {
             return response()->json(['error' => 'Catégorie de contrat non trouvée'], 404);
         }
 
-        $success = $category->update($validated);
-        if ($success) {
-            return response()->json($category,200);
-        } else {
-            return response()->json(['error' => 'Échec de la mise à jour de la catégorie de contrat'], 500);
-        }
+         $category->update($validated);
+        return response()->json($category,200);
+
     }
 
 

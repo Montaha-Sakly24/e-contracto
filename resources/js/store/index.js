@@ -4,12 +4,18 @@ const store = createStore({
     state: {
         //define variables
         token: localStorage.getItem("token") || 0,
+        //
+        drawer: null,
     },
 
     mutations: {
         // update variable value
         UPDATE_TOKEN(state, payload) {
             state.token = payload;
+        },
+        //
+        SET_DRAWER(state, payload) {
+            state.drawer = payload;
         },
     },
 
