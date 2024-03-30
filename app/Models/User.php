@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use App\Notifications\MailResetPasswordNotification;
 
 class User extends Authenticatable
 {
@@ -22,6 +23,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone',
+        'address',
+        'status',
+        'avatar'
     ];
 
     /**
@@ -43,4 +48,13 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    /**
+     * Override the mail body for reset password notification mail.
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        $url = 'http://localhost:8000/resetpassword?token='.$token;
+        $this->notify(new MailResetPasswordNotification($url));
+    }
 }

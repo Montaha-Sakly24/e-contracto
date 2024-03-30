@@ -4,8 +4,7 @@ const store = createStore({
     state: {
         //define variables
         token: localStorage.getItem("token") || 0,
-        //
-        drawer: null,
+        //role: null,
     },
 
     mutations: {
@@ -14,9 +13,10 @@ const store = createStore({
             state.token = payload;
         },
         //
-        SET_DRAWER(state, payload) {
-            state.drawer = payload;
-        },
+        // Set user role
+        // SET_ROLE(state, payload) {
+        //     state.role = payload;
+        // },
     },
 
     actions: {
@@ -29,6 +29,10 @@ const store = createStore({
             localStorage.removeItem("token");
             context.commit("UPDATE_TOKEN", 0);
         },
+        // //
+        // setRole(context, payload) {
+        //     context.commit("SET_ROLE", payload);
+        // },
     },
 
     getters: {
@@ -36,6 +40,10 @@ const store = createStore({
         getToken: function (state) {
             return state.token;
         },
+
+        // getRole: function (state) {
+        //     return state.role;
+        // },
     },
 });
 

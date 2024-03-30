@@ -11,12 +11,14 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+    public function signUp(Request $request)
     {
         // Validation
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:25',
             'email' => 'required|string|email|max:255|unique:users',
+            'phone'=> 'required|string|regex:/^[0-9]{8,15}$/',
+            'address'=> 'required|string|max:255',
             'password' => 'required|min:8',
             'c_password' => 'required|same:password'
         ]);
@@ -33,7 +35,10 @@ class AuthController extends Controller
         $input = $request->all();
         $input['password'] = Hash::make($input['password']);
         $user = User::create($input);
+        $user->assignRole('Simple User');
 
+
+        $role = $user->getRoleNames();
         // Création du jeton d'accès
         $token = $user->createToken('MyApp')->plainTextToken;
 
@@ -41,7 +46,9 @@ class AuthController extends Controller
             'success' => true,
             'data' => [
                 'token' => $token,
-                'name' => $user->name
+                'name' => $user->name,
+                'role'=>$role,
+
             ],
             'message' => 'User registered successfully'
         ];
@@ -52,32 +59,49 @@ class AuthController extends Controller
 
 
     public function login(Request $request)
-{
-    // Tentative d'authentification avec les informations fournies
-    if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-        $user = Auth::user();
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
 
-        // Création du jeton d'accès
-        $token = $user->createToken('MyApp')->plainTextToken;
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+        }
 
-        $response = [
-            'success' => true,
-            'data' => [
-                'token' => $token,
-                'name' => $user->name
-            ],
-            'message' => 'User logged in successfully'
-        ];
-        return response()->json($response, 200);
-    } else {
-        // Échec de l'authentification
-        $response = [
-            'success' => false,
-            'message' => 'Unauthorized'
-        ];
-        return response()->json($response, 401); // 401 signifie que l'accès est refusé
+        // Tentative d'authentification avec les informations fournies
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            $user = Auth::user();
+
+            if (!$user->status) {
+                Auth::logout();
+                return response()->json(['success' => false, 'message' => 'Your account is deactivated. Please contact the administrator!'], 403);
+            }
+
+
+            // Création du jeton d'accès
+            $token = $user->createToken('MyApp')->plainTextToken;
+
+
+            $response = [
+                'success' => true,
+                'data' => [
+                    'token' => $token,
+                    'name' => $user->name
+                ],
+                'message' => 'User logged in successfully'
+            ];
+            return response()->json($response, 200);
+        } else {
+
+            $user = User::where('email', $request->email)->first();
+
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'Invalid email address.'], 401);
+            }
+            return response()->json(['success' => false, 'message' => 'Invalid password.'], 401);
+        }
     }
-}
 
 
 }

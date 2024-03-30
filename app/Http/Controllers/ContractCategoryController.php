@@ -52,8 +52,8 @@ class ContractCategoryController extends Controller
 
 
         $validated = $request->validate([
-            'title' => 'required|max:255',
-            'description' =>'required',
+            'title' => 'max:25',
+            'description' =>'max:225',
         ]);
         // Vérifie si la catégorie de contrat existe
         if (is_null($category)) {
@@ -63,6 +63,14 @@ class ContractCategoryController extends Controller
          $category->update($validated);
         return response()->json($category,200);
 
+    }
+
+    public function searchCategory(){
+        $search = request()->get('search');
+
+        $category = ContractCategory::where('title', 'LIKE', "%{$search}%")->get();
+
+        return response()->json($category);
     }
 
 
