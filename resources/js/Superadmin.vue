@@ -111,7 +111,7 @@ export default {
             { icon: "mdi-account", title: "Admins", to: "/superadmin/admins" },
             {
                 icon: "mdi-account-circle",
-                title: "Simples Users",
+                title: "Samples Users",
                 to: "/superadmin/users",
             },
         ],

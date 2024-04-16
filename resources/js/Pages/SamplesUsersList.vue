@@ -3,7 +3,7 @@
         <v-card>
             <v-card-title class="d-flex align-center pe-2">
                 <v-icon icon="mdi-account-group"></v-icon>
-                Users
+                Samples Users List
 
                 <v-spacer></v-spacer>
 

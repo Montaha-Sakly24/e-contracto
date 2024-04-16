@@ -49,8 +49,6 @@ class ContractCategoryController extends Controller
     //Modifier une catégorie de contrat
     public function updateCategory(Request $request,ContractCategory $category)
     {
-
-
         $validated = $request->validate([
             'title' => 'max:25',
             'description' =>'max:225',
@@ -77,7 +75,11 @@ class ContractCategoryController extends Controller
     //Supprimer une catégorie de contrat
     public function deleteCategory(ContractCategory $category)
     {
-        $category->delete();
-        return response ('deleted',200);
+        try {
+            $category->delete();
+            return response()->json(['success' => true, 'message' => 'category deleted successfully !']);
+        }catch(\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Something went wrong..Please try again later !']);
+        }
     }
 }

@@ -10,19 +10,24 @@ import Superadmin from "./Superadmin.vue";
 import Admin from "./Admin.vue";
 import User from "./User.vue";
 
-import Home from "./Admin/Pages/Home.vue";
+import Home from "./Pages/Home.vue";
 
-import Dashboard from "./Superadmin/Pages/Dashboard.vue";
-import AdminsList from "./Superadmin/Pages/AdminsList.vue";
-import SamplesUsersList from "./Superadmin/Pages/SamplesUsersList.vue";
+import Dashboard from "./Pages/Dashboard.vue";
+import AdminsList from "./Pages/AdminsList.vue";
+import SamplesUsersList from "./Pages/SamplesUsersList.vue";
 
-import Profile from "./CommunPages/Pages/Profile.vue";
-import UserAccount from "./CommunPages/Components/UserAccount.vue";
-import AccountSettings from "./CommunPages/Components/AccountSettings.vue";
-import DeleteAccount from "./CommunPages/Components/DeleteAccount.vue";
+import Profile from "./Pages/Profile.vue";
+import UserAccount from "./Components/UserAccount.vue";
+import AccountSettings from "./Components/AccountSettings.vue";
+import DeleteAccount from "./Components/DeleteAccount.vue";
 
-import ContractCategoriesList from "./CommunPages/Pages/ContractCategoriesList.vue";
-import ContractModelsList from "./CommunPages/Pages/ContractModelsList.vue";
+import ContractCategoriesList from "./Pages/ContractCategoriesList.vue";
+
+import CreateGabarit from "./Components/CreateGabarit.vue";
+import GabaritsList from "./Pages/GabaritsList.vue";
+
+import CreateContractModel from "./Components/CreateContractModel.vue";
+import ContractModelsList from "./Pages/ContractModelsList.vue";
 
 const routes = [
     {
@@ -57,7 +62,6 @@ const routes = [
             requiresAuth: false,
         },*/
     },
-
     {
         path: "/admin",
         component: Admin,
@@ -65,12 +69,27 @@ const routes = [
             { path: "", name: "Home", component: Home },
             {
                 path: "categories",
-                name: "Contract Categories List",
+                name: "Contract Categories ",
                 component: ContractCategoriesList,
             },
             {
+                path: "gabarits",
+                name: "Gabarits",
+                component: GabaritsList,
+            },
+            {
+                path: "gabarits/Create",
+                name: "Create Gabarit",
+                component: CreateGabarit,
+            },
+            {
+                path: "models/create",
+                name: "Create Contract Model",
+                component: CreateContractModel,
+            },
+            {
                 path: "models",
-                name: "Contract Models List",
+                name: "Contract Models ",
                 component: ContractModelsList,
             },
         ],
@@ -88,10 +107,10 @@ const routes = [
                 component: Dashboard,
             },
 
-            { path: "admins", name: "Admins List", component: AdminsList },
+            { path: "admins", name: "Admins ", component: AdminsList },
             {
                 path: "users",
-                name: "Samples Users List",
+                name: "Samples Users",
                 component: SamplesUsersList,
             },
         ],

@@ -3,23 +3,11 @@
         <v-card>
             <v-card-title class="d-flex align-center pe-2">
                 <v-icon icon="mdi-folder"></v-icon>
-                Models
+                Gabarits List
                 <v-spacer></v-spacer>
-                <v-btn
-                    prepend-icon="mdi-file-document"
-                    color="info"
-                    class="ml-3"
-                    @click="showCreateDialog"
-                >
-                    Add New
-                </v-btn>
+                <create-gabarit></create-gabarit>
             </v-card-title>
-
-            <v-data-table
-                :headers="headers"
-                :items="categories"
-                :search="search"
-            >
+            <v-data-table :headers="headers" :items="gabarits">
                 <template v-slot:item="{ item }">
                     <tr>
                         <td>{{ item.id }}</td>
@@ -30,7 +18,7 @@
                                 <v-btn
                                     prepend-icon="mdi-eye"
                                     color="info"
-                                    @click="viewCategory(item)"
+                                    @click="viewGabarit(item)"
                                 >
                                     View
                                 </v-btn>
@@ -46,7 +34,7 @@
                                 <v-btn
                                     prepend-icon="mdi-delete"
                                     color="red"
-                                    @click="deleteCategory(item)"
+                                    @click="deleteGabarit(item)"
                                 >
                                     Delete
                                 </v-btn>
@@ -56,34 +44,7 @@
                 </template>
             </v-data-table>
         </v-card>
-    </v-container>
-    <v-dialog v-model="createDialog" max-width="400px">
-        <v-card>
-            <v-card-title>Add New Gabarit </v-card-title>
-            <v-card-text>
-                <v-text-field
-                    v-model="newCategory.title"
-                    label="Title"
-                    variant="outlined"
-                    required
-                ></v-text-field>
-                <v-textarea
-                    v-model="newCategory.description"
-                    label="Description"
-                    variant="outlined"
-                    required
-                ></v-textarea>
-            </v-card-text>
-            <v-card-actions>
-                <v-btn color="info" variant="flat" @click="createCategory">
-                    Create
-                </v-btn>
-                <v-btn color="error" @click="cancelCreate">Cancel</v-btn>
-            </v-card-actions>
-        </v-card>
-    </v-dialog>
-
-    <v-dialog
+        <v-dialog
         v-model="viewDialog"
         transition="dialog-bottom-transition"
         max-width="793"
@@ -92,61 +53,63 @@
             <v-card-title
                 class="title text-uppercase font-weight-bold font-italic"
             >
-                {{ category.title }}
+                {{ gabarit.title }}
                 <v-icon
                     @click="viewDialog = false"
                     style="position: absolute; top: 10px; right: 10px"
                     >mdi-close
                 </v-icon>
             </v-card-title>
-            <v-card-text >
-                <p ><b>Description: </b><pre > <div class="description-content">{{ category.description }}</div></pre></p>
+            <v-card-text>
+                <p><b>Content: </b><pre> {{ gabarit.content }}</pre></p>
             </v-card-text>
         </v-card>
     </v-dialog>
-
     <v-dialog v-model="updateDialog" max-width="400px">
         <v-card>
-            <v-card-title>{{ category.title }}</v-card-title>
+            <v-card-title>{{ gabarit.title }}</v-card-title>
             <v-card-text>
                 <p>Title</p>
                 <v-text-field
-                    v-model="newCategory.title"
+                    v-model="newGabarit.title"
                     variant="outlined"
                     required
                 ></v-text-field>
-                <p>Description</p>
+                <p>Content</p>
                 <v-textarea
-                    v-model="newCategory.description"
+                    v-model="newGabarit.content"
                     variant="outlined"
                     required
                 ></v-textarea>
             </v-card-text>
             <v-card-actions>
-                <v-btn color="info" variant="flat" @click="updateCategory">
+                <v-btn color="info" variant="flat" @click="updateGabarit">
                     Save changes
                 </v-btn>
                 <v-btn color="error" @click="cancelUpdate">Cancel</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
+    </v-container>
 </template>
-
 <script>
+import CreateGabarit from "../Components/CreateGabarit.vue";
 import axios from "axios";
 
 export default {
-    data() {
-        return {
+    components: {
+        CreateGabarit,
+    },
 
-            category: {},
-            categories: [],
-            createDialog: false,
+data() {
+        return {
+            gabarit: {},
+            gabarits: [],
             viewDialog: false,
             updateDialog: false,
-            newCategory: {
+            newGabarit: {
                 title: "",
-                description: "",
+                content: "",
             },
             headers: [
                 {
@@ -167,96 +130,59 @@ export default {
         };
     },
     mounted() {
-        this.fetchCategories();
+        this.fetchGabarits();
     },
     methods: {
-        async fetchCategories() {
+        async fetchGabarits() {
             try {
-                const response = await axios.get("/api/categories");
-                this.categories = response.data;
+                const response = await axios.get("/api/gabarits");
+                this.gabarits = response.data;
             } catch (error) {
-                console.error("Error fetching categories:", error);
+                console.error("Error fetching gabarits:", error);
             }
         },
 
-        showCreateDialog() {
-            this.newCategory.title = "";
-            this.newCategory.description = "";
-            this.createDialog = true;
-        },
-
-        async createCategory() {
-            try {
-                const response = await axios.post(
-                    "/api/categories",
-                    this.newCategory
-                );
-                console.log(response);
-                this.createDialog = false;
-                toast.fire({
-                    icon: "success",
-                    title: "Category created successfully ",
-                });
-                await this.fetchCategories();
-            } catch (error) {
-                if (error.response && error.response.status === 400) {
-                    if (error.response.data && error.response.data.errors) {
-                        this.errors = error.response.data.errors;
-                    } else {
-                        console.error("Validation error:", error.response.data);
-                    }
-                } else {
-                    console.error("Error creating category:", error);
-                    toast.fire({
-                        icon: "error",
-                        title: "Error creating category ",
-                    });
-                }
-            }
-        },
-        cancelCreate() {
-            this.createDialog = false;
-        },
-
-        async viewCategory(category) {
+        async viewGabarit(gabarit) {
             try {
                 const response = await axios.get(
-                    "/api/categories/" + category.id
+                    "/api/gabarits/" + gabarit.id
                 );
-                this.category = response.data;
+                this.gabarit = response.data;
                 this.viewDialog = true;
             } catch (error) {
-                console.error("Error viewing category:", error);
+                console.error("Error viewing gabarit:", error);
                 toast.fire({
                     icon: "error",
-                    title: "Error viewing category ",
+                    title: "Error viewing gabarit ",
                 });
             }
         },
 
-        showUpdateDialog(category) {
-            this.category = { ...category };
-            this.newCategory.title = category.title;
-            this.newCategory.description = category.description;
+        showUpdateDialog(gabarit) {
+            this.gabarit = { ...gabarit };
+            this.newGabarit.title = gabarit.title;
+            this.newGabarit.content = gabarit.content;
             this.updateDialog = true;
         },
-        async updateCategory(category) {
+        async updateGabarit(gabarit) {
             try {
                 const response = await axios.put(
-                    "/api/categories/" + category.id,
-                    this.newCategory
+                    `/api/gabarits/${this.gabarit.id}`,
+                    this.newGabarit
                 );
-                this.category = response.data;
+                this.gabarits = this.gabarits.map(cat =>
+                    cat.id === this.gabarit.id ? { ...cat, ...response.data } : cat
+                );
                 this.updateDialog = false;
                 toast.fire({
                     icon: "success",
-                    title: "Category updated successfully ",
+                    title: "Gabarit updated successfully ",
                 });
             } catch (error) {
-                console.error("Error updating category:", error);
+                console.error("Error updating gabarit:", error);
                 toast.fire({
                     icon: "error",
-                    title: "Error updating category ",
+                    title: "Error updating gabarit ",
                 });
             }
         },
@@ -264,10 +190,10 @@ export default {
             this.updateDialog = false;
         },
 
-        deleteCategory(category) {
+        deleteGabarit(gabarit) {
             swal.fire({
                 title: "Are you sure?",
-                text: category.title + " will be deleted permanently!",
+                text: gabarit.title + " will be deleted permanently!",
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#3085d6",
@@ -276,21 +202,21 @@ export default {
             }).then((result) => {
                 if (result.value) {
                     axios
-                        .delete("/api/categories/" + category.id)
+                        .delete("/api/gabarits/" + gabarit.id)
                         .then(() => {
                             toast.fire({
                                 icon: "success",
                                 title:
-                                    category.title +
+                                    gabarit.title +
                                     " has been deleted sucessfully",
                             });
-                            this.fetchCategories();
+                            this.fetchGabarits();
                         })
                         .catch(() => {
                             toast.fire({
                                 icon: "error",
                                 title:
-                                    category.title +
+                                    gabarit.title +
                                     " was unable to be remove, try again later",
                             });
                         });
@@ -300,6 +226,7 @@ export default {
     },
 };
 </script>
+
 <style scoped>
 .page-container {
     background-color: #f2f2f2;
@@ -316,9 +243,6 @@ export default {
 
 .dialog-card {
     padding: 20px;
-}
-.description-content {
-    max-width: 400px;
 }
 
 .title,

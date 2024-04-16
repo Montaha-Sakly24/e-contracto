@@ -2,11 +2,17 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ResetForgotPasswordController;
+
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProfileController;
+
 use App\Http\Controllers\ContractCategoryController;
-use App\Http\Controllers\ResetForgotPasswordController;
+use App\Http\Controllers\PlaceholderController;
+use App\Http\Controllers\GabaritController;
+use App\Http\Controllers\ContractModelController;
 
 /*
 |--------------------------------------------------------------------------
@@ -58,4 +64,22 @@ Route::prefix('categories')->group(function () {
     Route::put('/{category}', [ContractCategoryController::class, 'updateCategory']);
     Route::get('/search', [ContractCategoryController::class, 'searchCategory']);
     Route::delete('/{category}', [ContractCategoryController::class, 'deleteCategory']);
+});
+
+Route::get('/placeholders', [PlaceholderController::class, 'getPlaceholders']);
+
+Route::prefix('gabarits')->group(function () {
+    Route::post('/', [GabaritController::class, 'createGabarit']);
+    Route::get('/', [GabaritController::class, 'getAllGabarits']);
+    Route::get('/{gabarit}', [GabaritController::class, 'getGabarit']);
+    Route::put('/{gabarit}', [GabaritController::class, 'updateGabarit']);
+    Route::delete('/{gabarit}', [GabaritController::class, 'deleteGabarit']);
+});
+
+Route::prefix('models')->group(function () {
+    Route::post('/', [ContractModelController::class, 'createModel']);
+    Route::get('/', [ContractModelController::class, 'getAllModels']);
+    Route::get('/{model}', [ContractModelController::class, 'getModel']);
+    Route::put('/{model}', [ContractModelController::class, 'updateModel']);
+    Route::delete('/{model}', [ContractModelController::class, 'deleteModel']);
 });

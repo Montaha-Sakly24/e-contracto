@@ -116,7 +116,12 @@ export default {
             },
             {
                 icon: "mdi-file-document",
-                title: "Contract Models List",
+                title: "Gabarits",
+                to: "/admin/gabarits",
+            },
+            {
+                icon: "mdi-file-document",
+                title: "Contract Models",
                 to: "/admin/models",
             },
         ],
