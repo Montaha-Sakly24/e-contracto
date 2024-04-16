@@ -15,7 +15,7 @@
                     Add New
                 </v-btn>
                 <v-text-field
-                    v-model="search"
+                    v-model="searchCompte"
                     class="ml-3"
                     density="compact"
                     label="Search by name, email"
@@ -39,7 +39,7 @@
                 :headers="headers"
                 :items="users"
                 :sort-by="[{ key: 'id', order: 'asc' }]"
-                :search="search"
+                :search="searchCompte"
             >
                 <template v-slot:item="{ item }">
                     <tr>
@@ -200,42 +200,37 @@
     <v-dialog
         v-model="viewDialog"
         transition="dialog-bottom-transition"
-        max-width="600"
+        max-width="570"
     >
         <v-card class="dialog-card" variant="flat">
             <v-card-title
-                class="title text-uppercase font-weight-bold font-italic"
-            >
+                class="custom-border title text-uppercase font-weight-bold font-italic"
+                ><v-avatar size="65">
+                    <img :src="'/storage/' + user.avatar" alt="User's Avatar" />
+                </v-avatar>
                 {{ user.name }}
                 Profil
-                <v-icon
-                    @click="viewDialog = false"
-                    style="position: absolute; top: 10px; right: 10px"
-                    >mdi-close
-                </v-icon>
             </v-card-title>
-            <v-card-text>
-                <v-row>
-                    <v-col col="6">
-                        <p><b>Name: </b>{{ user.name }}</p>
-                        <p><b>Email: </b>{{ user.email }}</p>
-                        <p>
-                            <b>Status: </b
-                            ><span
-                                :style="{
-                                    color:
-                                        user.status === 1 ? 'green' : 'error',
-                                }"
-                            >
-                                {{ user.status === 1 ? "Active" : "Deactive" }}
-                            </span>
-                        </p>
-                    </v-col>
-                    <v-col col="6">
-                        <p><b>Phone: </b>{{ user.phone }}</p>
-                        <p><b>Address: </b>{{ user.address }}</p>
-                    </v-col>
-                </v-row>
+            <v-icon
+                @click="viewDialog = false"
+                style="position: absolute; top: 5px; right: 5px"
+                >mdi-close
+            </v-icon>
+            <v-card-text class="custom-border">
+                <p><b>Name: </b> {{ user.name }}</p>
+                <p><b>Email: </b>{{ user.email }}</p>
+                <p><b>Phone: </b>{{ user.phone }}</p>
+                <p><b>Address: </b>{{ user.address }}</p>
+                <p>
+                    <b>Status: </b
+                    ><span
+                        :style="{
+                            color: user.status === 1 ? 'green' : 'error',
+                        }"
+                    >
+                        {{ user.status === 1 ? "Active" : "Deactive" }}
+                    </span>
+                </p>
             </v-card-text>
         </v-card>
     </v-dialog>
@@ -247,7 +242,7 @@ import axios from "axios";
 export default {
     data() {
         return {
-            search: "",
+            searchCompte: "",
             user: {},
             users: [],
             toggle: false,
@@ -328,22 +323,45 @@ export default {
         },
 
         async searchAdmin() {
-            try {
-                axios.get("/api/users/search/" + this.search);
-                this.users = response.data.users;
+            if (!this.searchCompte.trim()) {
                 toast.fire({
-                    icon: "success",
-                    title: "find admin ",
+                    icon: "info",
+                    title: "Please enter a search term",
                 });
+                await this.fetchAdmins();
+                return;
+            }
+            try {
+                const response = await axios.get(
+                    `/api/users/search?search=${encodeURIComponent(
+                        this.searchCompte
+                    )}`
+                );
+
+                if (response.data.users) {
+                    this.users = response.data.users;
+                } else {
+                    this.users = response.data;
+                }
+                if (this.users.length > 0) {
+                    toast.fire({
+                        icon: "success",
+                        title: "Admins found successfully",
+                    });
+                } else {
+                    toast.fire({
+                        icon: "info",
+                        title: "No admin found",
+                    });
+                }
             } catch (error) {
-                console.error("Error searching users:", error);
+                console.error("Error searching admins:", error);
                 toast.fire({
                     icon: "error",
-                    title: "Error searching admin  ",
+                    title: "Error while searching admins",
                 });
             }
         },
-
         async viewAdmin(user) {
             try {
                 const response = await axios.get("/api/users/" + user.id);
@@ -435,5 +453,10 @@ export default {
 .title,
 b {
     font-family: "Times New Roman", Times, serif;
+}
+.custom-border {
+    border: 1px solid #347eba; /* Light grey border */
+    padding: 8px;
+    margin-bottom: 10px;
 }
 </style>

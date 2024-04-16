@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use Illuminate\Support\Facades\Storage;
+use Laravolt\Avatar\Avatar;
 
 class UserController extends Controller
 {
@@ -33,6 +35,17 @@ class UserController extends Controller
         $user->password = Hash::make($request->password);
         $user->assignRole('Admin');
 
+            // Generate avatar
+        $avatar = new Avatar(config('laravolt.avatar'));
+        $file = $avatar->create($user->name)->getImageObject()->encode('png');
+        $filename = 'avatars/'.$user->id.'/avatar.png';
+
+        // Store the avatar in the public disk
+        Storage::disk('public')->put($filename, (string) $file);
+
+        // Save the file path in the user's avatar column in the database
+        $user->avatar = $filename;
+
         $result = $user->save();
 
         if (!$result) {
@@ -50,7 +63,8 @@ class UserController extends Controller
             'success' => true,
             'data' => [
                 'token' => $token,
-                'name' => $user->name
+                'name' => $user->name,
+                'avatar' => $user->avatar
             ],
             'message' => 'Admin account created successfully'
         ];
@@ -71,7 +85,7 @@ class UserController extends Controller
         return response()->json($users,200);}
 
     //Consulter profil utilisateur (admin || user )
-    public function showUserProfil(User $user)
+    public function getUser(User $user)
     {
         return response()->json($user,200);
     }
@@ -94,14 +108,14 @@ class UserController extends Controller
     public function searchUser(){
         $search = request()->get('search');
 
-        $users = User::where('name', 'LIKE', "%{$search}%")
+        $users = User::role('Admin')->where('name', 'LIKE', "%{$search}%")
         ->orWhere('email', 'LIKE', "%{$search}%")->get();
 
         return response()->json($users);
     }
 
     //Supprimer compte
-    public function deleteUserProfil(User $user)
+    public function deleteUser(User $user)
     {
         try {
                 $user->delete();

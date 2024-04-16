@@ -51,16 +51,14 @@
                     </router-link>
                 </v-card-text>
                 <v-divider></v-divider>
-
                 <v-card-text class="text-center">
-                    <a
+                    <router-link
                         class="text-blue text-decoration-none"
-                        href="/login"
-                        rel="noopener noreferrer"
+                        to="/login"
                     >
                         Return to Log In page
                         <v-icon class="ml-2">mdi-chevron-right</v-icon>
-                    </a>
+                    </router-link>
                 </v-card-text>
             </v-form>
         </v-card>

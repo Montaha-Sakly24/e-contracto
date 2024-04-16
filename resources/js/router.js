@@ -10,10 +10,11 @@ import Superadmin from "./Superadmin.vue";
 import Admin from "./Admin.vue";
 import User from "./User.vue";
 
-import Home from "./Superadmin/Pages/Home.vue";
+import Home from "./Admin/Pages/Home.vue";
+
 import Dashboard from "./Superadmin/Pages/Dashboard.vue";
 import AdminsList from "./Superadmin/Pages/AdminsList.vue";
-import UsersList from "./Superadmin/Pages/UsersList.vue";
+import SamplesUsersList from "./Superadmin/Pages/SamplesUsersList.vue";
 
 import Profile from "./CommunPages/Pages/Profile.vue";
 import UserAccount from "./CommunPages/Components/UserAccount.vue";
@@ -88,7 +89,11 @@ const routes = [
             },
 
             { path: "admins", name: "Admins List", component: AdminsList },
-            { path: "users", name: "Users List", component: UsersList },
+            {
+                path: "users",
+                name: "Samples Users List",
+                component: SamplesUsersList,
+            },
         ],
         /*meta: {
             requiresAuth: true,

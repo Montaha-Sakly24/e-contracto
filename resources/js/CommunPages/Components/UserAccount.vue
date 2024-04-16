@@ -3,48 +3,7 @@
         <v-col cols="12">
             <v-card title="Account Details">
                 <v-card-text class="d-flex">
-                    <v-avatar
-                        rounded="lg"
-                        size="100"
-                        class="me-6"
-                        :image="account.avatarImg"
-                    />
-
-                    <!-- 👉 Upload Photo -->
-                    <v-form class="d-flex flex-column justify-center gap-5">
-                        <v-card-actions>
-                            <v-btn
-                                color="info"
-                                variant="outlined"
-                                prepend-icon="mdi-cloud-upload"
-                                @click="refInputEl?.click()"
-                            >
-                                <span class="d-none d-sm-block"
-                                    >Upload new photo</span
-                                >
-                            </v-btn>
-                            <input
-                                ref="refInputEl"
-                                type="file"
-                                name="file"
-                                accept=".jpeg,.png,.jpg,GIF"
-                                hidden
-                                @input="changeAvatar"
-                            />
-                            <v-btn
-                                type="reset"
-                                color="error"
-                                variant="outlined"
-                                prepend-icon="mdi-refresh"
-                                @click="resetAvatar"
-                            >
-                                <span class="d-none d-sm-block">Reset</span>
-                            </v-btn>
-                        </v-card-actions>
-                        <p class="text-body-1 mb-0">
-                            Allowed JPG, GIF or PNG. Max size of 800K
-                        </p>
-                    </v-form>
+                    <v-avatar rounded="lg" size="100" class="me-6" />
                 </v-card-text>
 
                 <v-divider />
@@ -85,12 +44,11 @@
                                 />
                             </v-col>
 
-                            <!--  Form Actions -->
                             <v-col cols="12" class="d-flex flex-wrap gap-4">
                                 <v-btn
                                     color="info"
                                     variant="flat"
-                                    @click="showUpdateDialog"
+                                    @click="updateProfile"
                                 >
                                     Update Profile
                                 </v-btn>
@@ -101,61 +59,21 @@
             </v-card>
         </v-col>
     </v-row>
-
-    <v-dialog v-model="dialogVisible" max-width="500">
-        <v-card>
-            <v-card-title>Update Profile</v-card-title>
-            <v-card-text>
-                <v-text-field
-                    v-model="form.name"
-                    label="Name"
-                    variant="outlined"
-                />
-                <v-text-field
-                    v-model="form.phone"
-                    label="Phone"
-                    variant="outlined"
-                />
-                <v-text-field
-                    v-model="form.address"
-                    label="Address"
-                    variant="outlined"
-                />
-            </v-card-text>
-            <v-card-actions>
-                <v-btn color="info" variant="flat" @click="updateProfile">
-                    Save Changes
-                </v-btn>
-                <v-btn color="error" @click="cancelUpdate">Reset</v-btn>
-            </v-card-actions>
-        </v-card>
-    </v-dialog>
 </template>
 
 <script>
-import avatar from "../../pictures/avatar.png";
 import axios from "axios";
 
 export default {
     data() {
         return {
             account: {
-                avatarImg: avatar,
                 name: "",
                 phone: "",
                 email: "",
                 address: "",
             },
-            form: {
-                name: "",
-                phone: "",
-
-                address: "",
-            },
             refInputEl: null,
-            dialogVisible: false,
-
-            user: { id: "12" },
         };
     },
     mounted() {
@@ -178,12 +96,7 @@ export default {
                 console.error("Error fetching profile information:", error);
             }
         },
-        showUpdateDialog() {
-            this.form.name = "";
-            this.form.phone = "";
-            this.form.address = "";
-            this.dialogVisible = true;
-        },
+
         async updateProfile() {
             try {
                 const response = await axios.put(
@@ -201,15 +114,6 @@ export default {
                 console.error("Error updating profile:", error);
             }
         },
-        cancelUpdate() {
-            this.dialogVisible = false;
-        },
     },
 };
 </script>
-
-/*const changeAvatar = (file) => { // Implement logic to change avatar... };
-const resetAvatar = () => { // Implement logic to reset avatar... }; const
-resetForm = () => { // Implement logic to reset form... }; const saveChanges =
-() => { // Implement logic to save changes... }; // Mock function to simulate
-fetching data from the database function fetchDataFromDatabase() {} */

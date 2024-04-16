@@ -13,31 +13,11 @@
                 >
                     Add New
                 </v-btn>
-                <v-text-field
-                    v-model="search"
-                    class="ml-3"
-                    density="compact"
-                    label="Search by name"
-                    prepend-inner-icon="mdi-magnify"
-                    variant="solo-filled"
-                    flat
-                    hide-details
-                    single-line
-                ></v-text-field>
-                <v-btn
-                    type="submit"
-                    class="ml-1"
-                    variant="text"
-                    @click="searchCategory"
-                >
-                    <v-icon>mdi-magnify</v-icon>
-                </v-btn>
             </v-card-title>
 
             <v-data-table
                 :headers="headers"
                 :items="categories"
-                :search="search"
             >
                 <template v-slot:item="{ item }">
                     <tr>
@@ -91,6 +71,8 @@
                     label="Description"
                     variant="outlined"
                     required
+                    auto-grow
+                    rows="5"
                 ></v-textarea>
             </v-card-text>
             <v-card-actions>
@@ -105,7 +87,7 @@
     <v-dialog
         v-model="viewDialog"
         transition="dialog-bottom-transition"
-        max-width="400"
+        max-width="793"
     >
         <v-card class="dialog-card" variant="flat">
             <v-card-title
@@ -119,7 +101,7 @@
                 </v-icon>
             </v-card-title>
             <v-card-text>
-                <p><b>Description: </b> {{ category.description }}</p>
+                <p><b>Description: </b><pre> {{ category.description }}</pre></p>
             </v-card-text>
         </v-card>
     </v-dialog>
@@ -157,7 +139,6 @@ import axios from "axios";
 export default {
     data() {
         return {
-            search: "",
             category: {},
             categories: [],
             createDialog: false,
@@ -237,23 +218,6 @@ export default {
             this.createDialog = false;
         },
 
-        async searchCategory() {
-            try {
-                axios.get("/api/categories/search/" + this.search);
-                this.categories = response.data.categories;
-                toast.fire({
-                    icon: "success",
-                    title: "find category ",
-                });
-            } catch (error) {
-                console.error("Error searching category:", error);
-                toast.fire({
-                    icon: "error",
-                    title: "Error searching category ",
-                });
-            }
-        },
-
         async viewCategory(category) {
             try {
                 const response = await axios.get(
@@ -279,10 +243,12 @@ export default {
         async updateCategory(category) {
             try {
                 const response = await axios.put(
-                    "/api/categories/" + category.id,
+                    `/api/categories/${this.category.id}`,
                     this.newCategory
                 );
-                this.category = response.data;
+                this.categories = this.categories.map(cat =>
+                    cat.id === this.category.id ? { ...cat, ...response.data } : cat
+                );
                 this.updateDialog = false;
                 toast.fire({
                     icon: "success",
@@ -351,7 +317,7 @@ export default {
 }
 
 .dialog-card {
-    padding: 25px;
+    padding: 20px;
 }
 
 .title,

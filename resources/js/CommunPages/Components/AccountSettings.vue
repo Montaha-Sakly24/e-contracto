@@ -82,7 +82,6 @@
                     </v-card-text>
                     <v-card-actions>
                         <v-btn color="info" variant="flat">Save Changes</v-btn>
-                        <v-btn color="error" variant="flat">Reset</v-btn>
                     </v-card-actions>
                 </v-form>
             </v-card>

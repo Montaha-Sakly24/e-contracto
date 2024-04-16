@@ -71,7 +71,6 @@ export default {
         },
         async deleteProfile() {
             try {
-                // Perform deletion logic here, for example:
                 const response = await axios.delete(
                     "/api/profile/" + this.user.id
                 );

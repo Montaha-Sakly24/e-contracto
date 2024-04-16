@@ -115,14 +115,13 @@
                 </v-btn>
 
                 <v-card-text class="text-center">
-                    <a
+                    <router-link
                         class="text-blue text-decoration-none"
-                        href="/login"
-                        rel="noopener noreferrer"
+                        to="/login"
                     >
                         Already have an account? Log in
                         <v-icon icon="mdi-chevron-right"></v-icon>
-                    </a>
+                    </router-link>
                 </v-card-text>
             </v-form>
         </v-card>

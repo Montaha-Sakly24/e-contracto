@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Laravolt\Avatar\Avatar;
+use Illuminate\Support\Facades\Storage;
 
 
 class AuthController extends Controller
@@ -37,21 +39,32 @@ class AuthController extends Controller
         $user = User::create($input);
         $user->assignRole('Simple User');
 
+        // Generate avatar
+        $avatar = new Avatar(config('laravolt.avatar'));
+        $file = $avatar->create($user->name)->getImageObject()->encode('png');
+        $filename = 'avatars/'.$user->id.'/avatar.png';
 
-        $role = $user->getRoleNames();
+        // Store the avatar in the public disk
+        Storage::disk('public')->put($filename, (string) $file);
+
+        // Save the file path in the user's avatar column in the database
+        $user->avatar = $filename;
+        $user->save();
+
         // Création du jeton d'accès
         $token = $user->createToken('MyApp')->plainTextToken;
+
 
         $response = [
             'success' => true,
             'data' => [
                 'token' => $token,
                 'name' => $user->name,
-                'role'=>$role,
-
+                'avatar' => $user->avatar
             ],
             'message' => 'User registered successfully'
         ];
+
 
         return response()->json($response, 200);
     }
@@ -78,6 +91,7 @@ class AuthController extends Controller
                 return response()->json(['success' => false, 'message' => 'Your account is deactivated. Please contact the administrator!'], 403);
             }
 
+            $role = $user->getRoleNames();
 
             // Création du jeton d'accès
             $token = $user->createToken('MyApp')->plainTextToken;
@@ -87,7 +101,8 @@ class AuthController extends Controller
                 'success' => true,
                 'data' => [
                     'token' => $token,
-                    'name' => $user->name
+                    'name' => $user->name,
+                    'role'=>$role,
                 ],
                 'message' => 'User logged in successfully'
             ];

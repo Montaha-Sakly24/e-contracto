@@ -42,14 +42,12 @@
                         class="text-subtitle-1 text-medium-emphasis d-flex align-center justify-space-between"
                     >
                         Password
-
-                        <a
+                        <router-link
                             class="text-caption text-decoration-none text-blue"
-                            href="/forgotpassword"
-                            rel="noopener noreferrer"
+                            to="/forgotpassword"
                         >
-                            Forgot password?</a
-                        >
+                            Forgot password?
+                        </router-link>
                     </div>
 
                     <v-text-field
@@ -76,14 +74,13 @@
                     </v-btn>
 
                     <v-card-text class="text-center">
-                        <a
+                        <router-link
                             class="text-blue text-decoration-none"
-                            href="/register"
-                            rel="noopener noreferrer"
+                            to="/register"
                         >
                             Sign up now
                             <v-icon icon="mdi-chevron-right"></v-icon>
-                        </a>
+                        </router-link>
                     </v-card-text>
                 </v-form>
             </v-card-text>
@@ -119,12 +116,20 @@ export default {
                 const response = await axios.post("/api/login", form);
                 if (response.data.success) {
                     store.dispatch("setToken", response.data.data.token);
-                    router.push({ name: "Dashboard" });
+                    const role = response.data.data.role;
+                    if (role.includes("Superadmin")) {
+                        router.push({ name: "Dashboard" });
+                    } else if (role.includes("Admin")) {
+                        router.push({ name: "Home" });
+                    } else if (role.includes("Simple User")) {
+                        router.push({ name: "Profile" });
+                    }
+
                     swal.fire({
                         position: "top",
                         icon: "success",
                         title: "Welcome ! ",
-                        text: "You are now logged in successufly ",
+                        text: "You are now logged in successfully ",
                         showConfirmButton: false,
                         timer: 1400,
                     });

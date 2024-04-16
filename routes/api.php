@@ -36,14 +36,14 @@ Route::prefix('users')->group(function () {
     Route::post('/', [UserController::class, 'createAdminAccount']);
     Route::get('/admin', [UserController::class, 'getAdminsList']);
     Route::get('/', [UserController::class, 'getUsersList']);
-    Route::get('/{user}', [UserController::class, 'showUserProfil']);
-    Route::delete('/{user}', [UserController::class, 'deleteUserProfil']);
     Route::get('/search', [UserController::class, 'searchUser']);
+    Route::get('/{user}', [UserController::class, 'getUser']);
+    Route::delete('/{user}', [UserController::class, 'deleteUser']);
     Route::put('/{user}', [UserController::class, 'activateDeactivateUserAccount']);
 
 });
 Route::prefix('profile')->group(function () {
-    Route::get('/{user}', [ProfileController::class, 'showProfile']);
+    Route::get('/{user}', [ProfileController::class, 'getProfile']);
     Route::put('/{user}', [ProfileController::class, 'updateProfile']);
     Route::delete('/{user}',[ProfileController::class, 'deleteProfile']);
 });
