@@ -11,7 +11,7 @@ import Admin from "./Admin.vue";
 import User from "./User.vue";
 
 import Home from "./Pages/Home.vue";
-
+import DashboardAdmin from "./Pages/DashboardAdmin.vue";
 import Dashboard from "./Pages/Dashboard.vue";
 import AdminsList from "./Pages/AdminsList.vue";
 import SamplesUsersList from "./Pages/SamplesUsersList.vue";
@@ -23,6 +23,7 @@ import DeleteAccount from "./Components/DeleteAccount.vue";
 
 import ContractCategoriesList from "./Pages/ContractCategoriesList.vue";
 
+import CustomizedButton from "./Components/CustomizedButton.vue";
 import CreateGabarit from "./Components/CreateGabarit.vue";
 import GabaritsList from "./Pages/GabaritsList.vue";
 
@@ -66,22 +67,31 @@ const routes = [
         path: "/admin",
         component: Admin,
         children: [
-            { path: "", name: "Home", component: Home },
+            {
+                path: "dashboardAdmin",
+                name: "Dashboard Admin",
+                component: DashboardAdmin,
+            },
             {
                 path: "categories",
                 name: "Contract Categories ",
                 component: ContractCategoriesList,
             },
             {
-                path: "gabarits",
-                name: "Gabarits",
-                component: GabaritsList,
+                path: "customizedButton",
+                component: CustomizedButton,
             },
             {
                 path: "gabarits/Create",
                 name: "Create Gabarit",
                 component: CreateGabarit,
             },
+            {
+                path: "gabarits",
+                name: "Gabarits",
+                component: GabaritsList,
+            },
+
             {
                 path: "models/create",
                 name: "Create Contract Model",
@@ -124,6 +134,7 @@ const routes = [
         name: "User",
         component: User,
         children: [
+            { path: "home", name: "Home", component: Home },
             { path: "profile", name: "Profile", component: Profile },
             {
                 path: "profile/account",

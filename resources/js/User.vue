@@ -105,6 +105,12 @@ export default {
         items: [
             {
                 icon: "mdi-view-dashboard",
+                title: "Home",
+                to: "/user/home",
+            },
+
+            {
+                icon: "mdi-view-dashboard",
                 title: "Profile",
                 to: "/user/profile",
             },

@@ -10,4 +10,8 @@ class Gabarit extends Model
     use HasFactory;
 
     protected $fillable = ['title', 'content'];
+
+    public function contractModels() {
+        return $this->belongsToMany(ContractModel::class, 'contract_models_gabarit');
+    }
 }

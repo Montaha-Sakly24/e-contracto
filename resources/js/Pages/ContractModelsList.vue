@@ -5,7 +5,14 @@
                 <v-icon icon="mdi-folder"></v-icon>
                 Models List
                 <v-spacer></v-spacer>
-                <create-contract-model></create-contract-model>
+                <v-btn
+                    prepend-icon="mdi-file-document"
+                    color="info"
+                    class="ml-3"
+                    @click="showCreateInterface"
+                >
+                    Add New
+                </v-btn>
             </v-card-title>
             <v-data-table :headers="headers" :items="models">
                 <template v-slot:item="{ item }">
@@ -98,22 +105,24 @@
     </v-dialog>
     </v-container>
 </template>
+
 <script>
-import CreateContractModel from "../Components/CreateContractModel.vue";
 import axios from "axios";
+import { useRouter } from "vue-router";
+import CreateContractModel from "../Components/CreateContractModel.vue";
 
 export default {
     components: {
         CreateContractModel,
     },
-
 data() {
         return {
+            router: useRouter(),
             model: {},
             models: [],
             viewDialog: false,
             updateDialog: false,
-            newModels: {
+            newModel: {
                 title: "",
                 description: "",
                 content: "",
@@ -148,7 +157,9 @@ data() {
                 console.error("Error fetching models:", error);
             }
         },
-
+        showCreateInterface(){
+            this.router.push({ name: "Create Contract Model" });
+        },
         async viewModel(model) {
             try {
                 const response = await axios.get(

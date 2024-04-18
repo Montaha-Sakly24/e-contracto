@@ -106,7 +106,7 @@ export default {
             {
                 icon: "mdi-view-dashboard",
                 title: "Dashboard",
-                to: "/admin/",
+                to: "/admin/dashboardAdmin",
             },
 
             {

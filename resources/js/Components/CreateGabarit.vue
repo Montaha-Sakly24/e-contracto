@@ -14,19 +14,22 @@
     >
         <v-row>
             <v-col>
-                <v-card>
-                    <v-list-title>Placeholders:</v-list-title>
-                    <draggable
-                        v-model="placeholders"
-                        :item-key="generateItemKey"
-                    >
-                        <template #item="{ element: placeholder, index }">
-                            <v-list-item @dragstart="onDragStart(index)">
-                                {{ placeholder.name }}
-                            </v-list-item>
-                        </template>
-                    </draggable>
-                </v-card>
+                <v-sheet class="mx-auto" max-width="400" rounded="xl" border>
+                    <div class="pa-4">
+                        <v-list-title>Placeholders:</v-list-title>
+                        <v-responsive class="overflow-y-auto" max-height="280">
+                            <v-chip-group
+                                v-for="placeholder in placeholders"
+                                :key="placeholder.id"
+                                @click="appendContent(placeholder)"
+                            >
+                                <v-chip>
+                                    {{ placeholder.name }}
+                                </v-chip>
+                            </v-chip-group>
+                        </v-responsive>
+                    </div>
+                </v-sheet>
             </v-col>
             <v-col>
                 <v-card width="793">
@@ -44,11 +47,11 @@
                             label="Content"
                             variant="outlined"
                             required
-                            @drop.prevent="onDrop"
-                            @dragover.prevent
                         >
                         </v-textarea>
                     </v-card-text>
+                    <customized-button></customized-button>
+                    <v-color-picker hide-canvas></v-color-picker>
                     <v-card-actions>
                         <v-btn
                             color="info"
@@ -68,19 +71,18 @@
 
 <script>
 import axios from "axios";
-import draggable from "vuedraggable";
-
+import CustomizedButton from "../Components/CustomizedButton.vue";
 export default {
     components: {
-        draggable,
+        CustomizedButton,
     },
     data() {
         return {
             createDialog: false,
             drawer: false,
             placeholders: [],
-            gabarit: [],
-            draggedPlaceholder: null,
+            placeholder: {},
+            gabarits: [],
             gabarit: {
                 title: "",
                 content: "",
@@ -104,31 +106,13 @@ export default {
             const response = await axios.get("/api/gabarits");
             this.gabarits = response.data;
         },
-        onDragStart(index) {
-            // Store the dragged placeholder
-            this.draggedPlaceholder = this.placeholders[index];
-        },
-        onDrop(event) {
-            // Insert the dragged placeholder into the content
-            if (this.draggedPlaceholder) {
-                const startPosition = event.target.selectionStart;
-                const endPosition = event.target.selectionEnd;
-                const content = this.$refs.content;
-                const textBefore = content.value.substring(0, startPosition);
-                const textAfter = content.value.substring(endPosition);
-                const placeholderText = `{${this.draggedPlaceholder.name}}`;
-                content.value = `${textBefore}${placeholderText}${textAfter}`;
-                this.draggedPlaceholder = null;
-            }
-        },
-        generateItemKey(index) {
-            const placeholder = this.placeholders[index];
-            return placeholder ? placeholder.id : index; // Use index as fallback if id is undefined
-        },
         async showCreateDialog() {
             this.gabarit.title = "";
             this.gabarit.content = "";
             this.createDialog = true;
+        },
+        appendContent(placeholder) {
+            this.gabarit.content += ` ${placeholder.identification}`;
         },
         async createGabarit() {
             const response = await axios.post("/api/gabarits", this.gabarit);

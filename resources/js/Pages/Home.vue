@@ -1,38 +1,55 @@
 <template>
-    <link
-        href="https://cdn.jsdelivr.net/npm/@mdi/font@5.9.55/css/materialdesignicons.min.css"
-        rel="stylesheet"
-    />
-    <v-layout class="rounded rounded-md">
-        <v-navigation-drawer
-            color="grey-darken-2"
-            permanent
-        ></v-navigation-drawer>
-
-        <v-app-bar :order="order" color="grey-lighten-2" flat>
-            <template v-slot:append>
-                <v-icon @click="toggleOrder">mdi-swap-horizontal</v-icon>
-            </template>
-        </v-app-bar>
-
-        <v-main
-            class="d-flex align-center justify-center"
-            style="min-height: 300px"
-        >
-            Main Content
-        </v-main>
-    </v-layout>
+    <v-row>
+        <v-col sm="6" md="4" v-for="model in models" :key="model.id">
+            <v-card class="mx-auto fixed-size">
+                <v-img
+                    height="180px"
+                    src="https://cdn.vuetifyjs.com/images/cards/sunshine.jpg"
+                    cover
+                ></v-img>
+                <v-card-title class="text-truncate">{{
+                    model.title
+                }}</v-card-title>
+                <v-card-text class="text-truncate">{{
+                    model.description
+                }}</v-card-text>
+            </v-card>
+        </v-col>
+    </v-row>
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
-    data: () => ({
-        order: 0,
-    }),
+    data() {
+        return {
+            models: [],
+        };
+    },
+    mounted() {
+        this.fetchModels();
+    },
     methods: {
-        toggleOrder() {
-            this.order = this.order === 0 ? -1 : 0;
+        async fetchModels() {
+            try {
+                const response = await axios.get("/api/models");
+                this.models = response.data;
+            } catch (error) {
+                console.error("Error fetching models:", error);
+            }
         },
     },
 };
 </script>
+<style scoped>
+.mx-auto {
+    margin-left: 8px;
+    margin-right: 8px;
+}
+.fixed-size {
+    height: 350px;
+    width: 300px;
+    overflow: auto;
+}
+</style>
