@@ -3,16 +3,16 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class ProfileController extends Controller
 {
     //Consulter profil
     public function getProfile()
     {
-        return response()->json(Auth::user(),200);
+        return response()->json(Auth::user(), 200);
     }
 
     //Modifier profil
@@ -20,22 +20,48 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
 
-        $this->validate($request,[
+        $validatedData = $request->validate([
             'name' => 'string|max:25',
             'phone' => 'string|regex:/^[0-9]{8,15}$/',
             'address' => 'string|max:255',
         ]);
 
         try {
-            $user->update($request->all());
+            $user->update($validatedData);
             return response()->json(['success' => true, 'message' => 'Profile updated successfully !']);
         } catch(\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|string|min:8',
+            'c_new_password' => 'required|same:new_password'
+        ]);
+
+        $user = Auth::user();
+
+        // Vérifier si le mot de passe actuel est correcte
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'errors' => [
+                    'current_password' => ['The provided password does not match your current password.']
+                ]
+            ], 422);
+        }
+
+        // Màj mot de passe
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return response()->json(['message' => 'Password successfully updated']);
+
+    }
 
     //Supprimer compte
-    public function deleteProfile():RedirectResponse
+    public function deleteProfile()
     {
         $user = Auth::user();
 
@@ -43,11 +69,10 @@ class ProfileController extends Controller
             $user->delete();
             Auth::logout();
 
-            return redirect()->route('login')->with('status', 'Your account has been deleted successfully.');
-
-        } catch(\Exception $e) {
-            return back()->withErrors('Something went wrong.. Please try again later !');
-        }
+             return response()->json(['message' => 'Your account has been deleted successfully.'], 200);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Something went wrong. Please try again later.'], 500);
+    }
     }
 }
 

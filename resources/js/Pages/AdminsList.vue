@@ -25,14 +25,6 @@
                     hide-details
                     single-line
                 ></v-text-field>
-                <v-btn
-                    type="submit"
-                    class="ml-1"
-                    variant="text"
-                    @click="searchAdmin"
-                >
-                    <v-icon>mdi-magnify</v-icon>
-                </v-btn>
             </v-card-title>
 
             <v-data-table
@@ -53,7 +45,11 @@
                                     'text-error': item.status !== 1,
                                 }"
                             >
-                                {{ item.status === 1 ? "Active" : "Deactive" }}
+                                {{
+                                    item.status === 1
+                                        ? "Activated"
+                                        : "Deactivated"
+                                }}
                             </span>
                         </td>
                         <td>
@@ -78,9 +74,7 @@
                                     :color="
                                         item.status === 1 ? 'error' : 'success'
                                     "
-                                    @click="
-                                        activateDeactivateAdminAccount(item)
-                                    "
+                                    @click="changeAccountStatus(item)"
                                 >
                                     <v-icon
                                         >{{
@@ -225,10 +219,10 @@
                     <b>Status: </b
                     ><span
                         :style="{
-                            color: user.status === 1 ? 'green' : 'error',
+                            color: user.status === 1 ? 'green' : 'red',
                         }"
                     >
-                        {{ user.status === 1 ? "Active" : "Deactive" }}
+                        {{ user.status === 1 ? "Activated" : "Deactivated" }}
                     </span>
                 </p>
             </v-card-text>
@@ -322,46 +316,6 @@ export default {
             this.createDialog = false;
         },
 
-        async searchAdmin() {
-            if (!this.searchCompte.trim()) {
-                toast.fire({
-                    icon: "info",
-                    title: "Please enter a search term",
-                });
-                await this.fetchAdmins();
-                return;
-            }
-            try {
-                const response = await axios.get(
-                    `/api/users/search?search=${encodeURIComponent(
-                        this.searchCompte
-                    )}`
-                );
-
-                if (response.data.users) {
-                    this.users = response.data.users;
-                } else {
-                    this.users = response.data;
-                }
-                if (this.users.length > 0) {
-                    toast.fire({
-                        icon: "success",
-                        title: "Admins found successfully",
-                    });
-                } else {
-                    toast.fire({
-                        icon: "info",
-                        title: "No admin found",
-                    });
-                }
-            } catch (error) {
-                console.error("Error searching admins:", error);
-                toast.fire({
-                    icon: "error",
-                    title: "Error while searching admins",
-                });
-            }
-        },
         async viewAdmin(user) {
             try {
                 const response = await axios.get("/api/users/" + user.id);
@@ -408,7 +362,7 @@ export default {
                 }
             });
         },
-        activateDeactivateAdminAccount(user) {
+        changeAccountStatus(user) {
             try {
                 axios
                     .put("/api/users/" + user.id)

@@ -91,7 +91,7 @@ class UserController extends Controller
     }
 
     //Activer/désactiver compte utilisateur (administrateur et utilisateur)
-    public function activateDeactivateUserAccount(User $user){
+    public function changeAccountStatus(User $user){
         try {
             $user->status = !$user->status;
             $user->save();
@@ -102,16 +102,6 @@ class UserController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
 
-    }
-
-    //Rechercher compte utilisateur (administrateur et utilisateur)
-    public function searchUser(){
-        $search = request()->get('search');
-
-        $users = User::role('Admin')->where('name', 'LIKE', "%{$search}%")
-        ->orWhere('email', 'LIKE', "%{$search}%")->get();
-
-        return response()->json($users);
     }
 
     //Supprimer compte

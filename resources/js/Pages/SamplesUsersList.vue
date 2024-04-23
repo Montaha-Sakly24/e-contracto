@@ -18,14 +18,6 @@
                     hide-details
                     single-line
                 ></v-text-field>
-                <v-btn
-                    type="submit"
-                    class="ml-1"
-                    variant="text"
-                    @click="searchUser"
-                >
-                    <v-icon>mdi-magnify</v-icon>
-                </v-btn>
             </v-card-title>
 
             <v-data-table
@@ -46,7 +38,11 @@
                                     'text-error': item.status !== 1,
                                 }"
                             >
-                                {{ item.status === 1 ? "Active" : "Deactive" }}
+                                {{
+                                    item.status === 1
+                                        ? "Activated"
+                                        : "Deactivated"
+                                }}
                             </span>
                         </td>
                         <td>
@@ -71,7 +67,7 @@
                                     :color="
                                         item.status === 1 ? 'error' : 'success'
                                     "
-                                    @click="activateDeactivateUserAccount(item)"
+                                    @click="changeAccountStatus(item)"
                                 >
                                     <v-icon
                                         >{{
@@ -121,10 +117,10 @@
                     <b>Status: </b
                     ><span
                         :style="{
-                            color: user.status === 1 ? 'green' : 'error',
+                            color: user.status === 1 ? 'green' : 'red',
                         }"
                     >
-                        {{ user.status === 1 ? "Active" : "Deactive" }}
+                        {{ user.status === 1 ? "Activated" : "Deactivated" }}
                     </span>
                 </p>
             </v-card-text>
@@ -166,47 +162,6 @@ export default {
                 this.users = response.data;
             } catch (error) {
                 console.error("Error fetching users:", error);
-            }
-        },
-
-        async searchUser() {
-            if (!this.searchCompte.trim()) {
-                toast.fire({
-                    icon: "info",
-                    title: "Please enter a search term",
-                });
-                await this.fetchUsers();
-                return;
-            }
-            try {
-                const response = await axios.get(
-                    `/api/users/search?search=${encodeURIComponent(
-                        this.searchCompte
-                    )}`
-                );
-
-                if (response.data.users) {
-                    this.users = response.data.users;
-                } else {
-                    this.users = response.data;
-                }
-                if (this.users.length > 0) {
-                    toast.fire({
-                        icon: "success",
-                        title: "Sample user found successfully",
-                    });
-                } else {
-                    toast.fire({
-                        icon: "info",
-                        title: "No sample user found",
-                    });
-                }
-            } catch (error) {
-                console.error("Error searching samples users:", error);
-                toast.fire({
-                    icon: "error",
-                    title: "Error while searching samples users",
-                });
             }
         },
 
@@ -252,7 +207,7 @@ export default {
                 }
             });
         },
-        activateDeactivateUserAccount(user) {
+        changeAccountStatus(user) {
             try {
                 axios
                     .put("/api/users/" + user.id)

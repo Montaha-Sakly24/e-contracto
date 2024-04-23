@@ -3,7 +3,12 @@
         <v-col cols="12">
             <v-card title="Account Details">
                 <v-card-text class="d-flex">
-                    <v-avatar rounded="lg" size="100" class="me-6" />
+                    <v-avatar rounded="lg" size="100" class="me-6">
+                        <img
+                            :src="'/storage/' + account.avatar"
+                            alt="User's Avatar"
+                        />
+                    </v-avatar>
                 </v-card-text>
 
                 <v-divider />
@@ -16,6 +21,7 @@
                                     v-model="account.name"
                                     label="Name"
                                     variant="outlined"
+                                    :error-messages="errors.name"
                                 />
                             </v-col>
 
@@ -24,6 +30,7 @@
                                     v-model="account.phone"
                                     label="Phone"
                                     variant="outlined"
+                                    :error-messages="errors.phone"
                                 />
                             </v-col>
 
@@ -33,6 +40,7 @@
                                     label="E-mail"
                                     type="email"
                                     variant="outlined"
+                                    readonly
                                 />
                             </v-col>
 
@@ -41,6 +49,7 @@
                                     v-model="account.address"
                                     label="Address"
                                     variant="outlined"
+                                    :error-messages="errors.address"
                                 />
                             </v-col>
 
@@ -68,30 +77,34 @@ export default {
     data() {
         return {
             account: {
+                avatar: "",
                 name: "",
                 phone: "",
                 email: "",
                 address: "",
             },
-            refInputEl: null,
+            errors: {
+                name: [],
+                phone: [],
+                address: [],
+            },
         };
     },
     mounted() {
-        this.fetchProfileInformation();
+        this.fetchProfile();
     },
     methods: {
-        async fetchProfileInformation() {
+        async fetchProfile() {
             try {
-                const response = await axios.get(
-                    "/api/profile/" + this.user.id
-                );
-                const userData = response.data;
-
-                this.account.name = userData.name;
-                this.account.phone = userData.phone;
-                this.account.email = userData.email;
-                this.account.address = userData.address;
-                console.log(this.account);
+                const response = await axios.get("/api/profile", {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem(
+                            "token"
+                        )}`,
+                    },
+                });
+                this.account = response.data;
+                console.log("Profile loaded:", this.account);
             } catch (error) {
                 console.error("Error fetching profile information:", error);
             }
@@ -99,20 +112,27 @@ export default {
 
         async updateProfile() {
             try {
-                const response = await axios.put(
-                    "/api/profile/" + this.user.id,
-                    this.form
-                );
+                const response = await axios.put("/api/profile", this.account, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem(
+                            "token"
+                        )}`,
+                    },
+                });
                 console.log("Profile updated successfully:", response.data);
-
-                this.form.name = response.data.name;
-                this.form.phone = response.data.phone;
-                this.form.address = response.data.address;
-                this.dialogVisible = false;
-                await this.fetchProfileInformation();
+                this.account = response.data;
+                toast.fire({
+                    icon: "success",
+                    title: "Profile updated successfully",
+                });
+                this.fetchProfile();
             } catch (error) {
                 console.error("Error updating profile:", error);
+                this.handleErrors(error.response.data);
             }
+        },
+        handleErrors(errors) {
+            this.errors = errors.errors || {};
         },
     },
 };

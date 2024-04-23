@@ -42,16 +42,16 @@ Route::prefix('users')->group(function () {
     Route::post('/', [UserController::class, 'createAdminAccount']);
     Route::get('/admin', [UserController::class, 'getAdminsList']);
     Route::get('/', [UserController::class, 'getUsersList']);
-    Route::get('/search', [UserController::class, 'searchUser']);
     Route::get('/{user}', [UserController::class, 'getUser']);
     Route::delete('/{user}', [UserController::class, 'deleteUser']);
-    Route::put('/{user}', [UserController::class, 'activateDeactivateUserAccount']);
-
+    Route::put('/{user}', [UserController::class, 'changeAccountStatus']);
 });
-Route::prefix('profile')->group(function () {
-    Route::get('/{user}', [ProfileController::class, 'getProfile']);
-    Route::put('/{user}', [ProfileController::class, 'updateProfile']);
-    Route::delete('/{user}',[ProfileController::class, 'deleteProfile']);
+
+Route::prefix('profile')->middleware('auth:sanctum')->group(function () {
+    Route::get('/', [ProfileController::class, 'getProfile']);
+    Route::put('/', [ProfileController::class, 'updateProfile']);
+    Route::post('/', [ProfileController::class, 'changePassword']);
+    Route::delete('/',[ProfileController::class, 'deleteProfile']);
 });
 
 
@@ -62,7 +62,6 @@ Route::prefix('categories')->group(function () {
     Route::get('/', [ContractCategoryController::class, 'showlisteCategories']);
     Route::get('/{category}', [ContractCategoryController::class, 'showCategory']);
     Route::put('/{category}', [ContractCategoryController::class, 'updateCategory']);
-    Route::get('/search', [ContractCategoryController::class, 'searchCategory']);
     Route::delete('/{category}', [ContractCategoryController::class, 'deleteCategory']);
 });
 

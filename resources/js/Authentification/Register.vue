@@ -4,136 +4,149 @@
         rel="stylesheet"
     />
 
-    <div>
-        <v-card
-            v-if="!registrationSuccess"
-            class="mx-auto pa-12 pb-8"
-            elevation="8"
-            max-width="448"
-            rounded="lg"
-            ><v-img
+    <v-row class="background-interface">
+        <v-col class="d-flex justify-center align-center">
+            <v-img
                 class="mx-auto my-6"
-                max-width="150"
-                src="https://cdn.vuetifyjs.com/docs/images/logos/vuetify-logo-v3-slim-text-light.svg"
+                max-width="300"
+                :src="logoEcontracto"
             ></v-img>
-            <v-form @submit.prevent="signUp">
-                <div class="text-subtitle-1 text-medium-emphasis">
-                    Create an Account
-                </div>
+        </v-col>
+        <v-col>
+            <v-card
+                v-if="!registrationSuccess"
+                class="mx-auto pa-12 pb-8 form-card"
+                elevation="8"
+                max-width="448"
+                rounded="lg"
+            >
+                <v-form @submit.prevent="signUp">
+                    <div class="text-subtitle-1 text-medium-emphasis">
+                        Create an Account
+                    </div>
 
-                <v-text-field
-                    v-model="form.name"
-                    density="compact"
-                    placeholder="Name"
-                    prepend-inner-icon="mdi-account-outline"
-                    variant="outlined"
-                    clearable
-                    :error-messages="errors.name ? [errors.name[0]] : []"
-                    :outlined="errors.name"
-                ></v-text-field>
+                    <v-text-field
+                        v-model="form.name"
+                        density="compact"
+                        placeholder="Name"
+                        prepend-inner-icon="mdi-account-outline"
+                        variant="outlined"
+                        clearable
+                        :error-messages="errors.name ? [errors.name[0]] : []"
+                        :outlined="errors.name"
+                    ></v-text-field>
 
-                <v-text-field
-                    v-model="form.phone"
-                    density="compact"
-                    placeholder="Phone"
-                    prepend-inner-icon="mdi-phone"
-                    variant="outlined"
-                    clearable
-                    :error-messages="errors.phone ? [errors.phone[0]] : []"
-                    :outlined="errors.phone"
-                ></v-text-field>
+                    <v-text-field
+                        v-model="form.phone"
+                        density="compact"
+                        placeholder="Phone"
+                        prepend-inner-icon="mdi-phone"
+                        variant="outlined"
+                        clearable
+                        :error-messages="errors.phone ? [errors.phone[0]] : []"
+                        :outlined="errors.phone"
+                    ></v-text-field>
 
-                <v-text-field
-                    v-model="form.address"
-                    density="compact"
-                    placeholder="Address"
-                    prepend-inner-icon="mdi-map-marker"
-                    variant="outlined"
-                    clearable
-                    :error-messages="errors.address ? [errors.address[0]] : []"
-                    :outlined="errors.address"
-                ></v-text-field>
+                    <v-text-field
+                        v-model="form.address"
+                        density="compact"
+                        placeholder="Address"
+                        prepend-inner-icon="mdi-map-marker"
+                        variant="outlined"
+                        clearable
+                        :error-messages="
+                            errors.address ? [errors.address[0]] : []
+                        "
+                        :outlined="errors.address"
+                    ></v-text-field>
 
-                <v-text-field
-                    v-model="form.email"
-                    density="compact"
-                    placeholder="Email address"
-                    prepend-inner-icon="mdi-email-outline"
-                    variant="outlined"
-                    clearable
-                    :error-messages="errors.email ? [errors.email[0]] : []"
-                    :outlined="errors.email"
-                ></v-text-field>
+                    <v-text-field
+                        v-model="form.email"
+                        density="compact"
+                        placeholder="Email address"
+                        prepend-inner-icon="mdi-email-outline"
+                        variant="outlined"
+                        clearable
+                        :error-messages="errors.email ? [errors.email[0]] : []"
+                        :outlined="errors.email"
+                    ></v-text-field>
 
-                <v-text-field
-                    v-model="form.password"
-                    prepend-inner-icon="mdi-lock-outline"
-                    density="compact"
-                    variant="outlined"
-                    clearable
-                    placeholder="Enter your password"
-                    :type="isPasswordVisible ? 'text' : 'password'"
-                    :append-inner-icon="
-                        isPasswordVisible ? 'mdi-eye' : 'mdi-eye-off'
-                    "
-                    @click:append-inner="isPasswordVisible = !isPasswordVisible"
-                    :error-messages="
-                        errors.password ? [errors.password[0]] : []
-                    "
-                    :outlined="errors.password"
-                ></v-text-field>
+                    <v-text-field
+                        v-model="form.password"
+                        prepend-inner-icon="mdi-lock-outline"
+                        density="compact"
+                        variant="outlined"
+                        clearable
+                        placeholder="Enter your password"
+                        :type="isPasswordVisible ? 'text' : 'password'"
+                        :append-inner-icon="
+                            isPasswordVisible ? 'mdi-eye' : 'mdi-eye-off'
+                        "
+                        @click:append-inner="
+                            isPasswordVisible = !isPasswordVisible
+                        "
+                        :error-messages="
+                            errors.password ? [errors.password[0]] : []
+                        "
+                        :outlined="errors.password"
+                    ></v-text-field>
 
-                <v-text-field
-                    v-model="form.c_password"
-                    prepend-inner-icon="mdi-lock-outline"
-                    density="compact"
-                    variant="outlined"
-                    clearable
-                    placeholder="Confirm your password"
-                    :type="isConfirmPasswordVisible ? 'text' : 'password'"
-                    :append-inner-icon="
-                        isConfirmPasswordVisible ? 'mdi-eye' : 'mdi-eye-off'
-                    "
-                    @click:append-inner="
-                        isConfirmPasswordVisible = !isConfirmPasswordVisible
-                    "
-                    :error-messages="
-                        errors.c_password ? [errors.c_password[0]] : []
-                    "
-                    :outlined="errors.c_password"
-                ></v-text-field>
+                    <v-text-field
+                        v-model="form.c_password"
+                        prepend-inner-icon="mdi-lock-outline"
+                        density="compact"
+                        variant="outlined"
+                        clearable
+                        placeholder="Confirm your password"
+                        :type="isConfirmPasswordVisible ? 'text' : 'password'"
+                        :append-inner-icon="
+                            isConfirmPasswordVisible ? 'mdi-eye' : 'mdi-eye-off'
+                        "
+                        @click:append-inner="
+                            isConfirmPasswordVisible = !isConfirmPasswordVisible
+                        "
+                        :error-messages="
+                            errors.c_password ? [errors.c_password[0]] : []
+                        "
+                        :outlined="errors.c_password"
+                    ></v-text-field>
 
-                <v-btn
-                    type="submit"
-                    block
-                    class="mb-8"
-                    color="blue"
-                    size="large"
-                    variant="tonal"
-                >
-                    Sign Up
-                </v-btn>
-
-                <v-card-text class="text-center">
-                    <router-link
-                        class="text-blue text-decoration-none"
-                        to="/login"
+                    <v-btn
+                        type="submit"
+                        block
+                        class="mb-8"
+                        color="blue"
+                        size="large"
+                        variant="tonal"
                     >
-                        Already have an account? Log in
-                        <v-icon icon="mdi-chevron-right"></v-icon>
-                    </router-link>
-                </v-card-text>
-            </v-form>
-        </v-card>
-    </div>
+                        Sign Up
+                    </v-btn>
+
+                    <v-card-text class="text-center">
+                        <router-link
+                            class="text-blue text-decoration-none"
+                            to="/login"
+                        >
+                            Already have an account? Log in
+                            <v-icon icon="mdi-chevron-right"></v-icon>
+                        </router-link>
+                    </v-card-text>
+                </v-form>
+            </v-card>
+        </v-col>
+    </v-row>
 </template>
 <script>
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 import axios from "axios";
+import contract from "../Pages/contract.png";
 
 export default {
+    data: () => ({
+        logoEcontracto: contract,
+    }),
     setup() {
         const router = useRouter();
         const store = useStore();
@@ -191,6 +204,14 @@ export default {
 </script>
 
 <style scoped>
+.background-interface {
+    height: 660px;
+    background-image: linear-gradient(-20deg, #7aaeb9, #0c4d86);
+}
+.form-card {
+    height: 590px;
+    margin: 15px;
+}
 .error-message {
     color: red;
 }

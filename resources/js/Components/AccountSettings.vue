@@ -11,7 +11,7 @@
                             <v-col cols="12" md="6">
                                 <v-text-field
                                     variant="outlined"
-                                    v-model="currentPassword"
+                                    v-model="form.currentPassword"
                                     :type="
                                         isCurrentPasswordVisible
                                             ? 'text'
@@ -27,6 +27,8 @@
                                         isCurrentPasswordVisible =
                                             !isCurrentPasswordVisible
                                     "
+                                    outlined
+                                    :error-messages="errors['current_password']"
                                 />
                             </v-col>
                         </v-row>
@@ -35,7 +37,7 @@
                             <v-col cols="12" md="6">
                                 <v-text-field
                                     variant="outlined"
-                                    v-model="newPassword"
+                                    v-model="form.newPassword"
                                     :type="
                                         isNewPasswordVisible
                                             ? 'text'
@@ -51,13 +53,15 @@
                                         isNewPasswordVisible =
                                             !isNewPasswordVisible
                                     "
+                                    outlined
+                                    :error-messages="errors['new_password']"
                                 />
                             </v-col>
 
                             <v-col cols="12" md="6">
                                 <v-text-field
                                     variant="outlined"
-                                    v-model="confirmPassword"
+                                    v-model="form.confirmPassword"
                                     :type="
                                         isConfirmPasswordVisible
                                             ? 'text'
@@ -73,6 +77,8 @@
                                         isConfirmPasswordVisible =
                                             !isConfirmPasswordVisible
                                     "
+                                    outlined
+                                    :error-messages="errors['c_new_password']"
                                 />
                             </v-col>
                         </v-row>
@@ -81,7 +87,12 @@
                         </p>
                     </v-card-text>
                     <v-card-actions>
-                        <v-btn color="info" variant="flat">Save Changes</v-btn>
+                        <v-btn
+                            color="info"
+                            variant="flat"
+                            @click="changePassword"
+                            >Save Changes</v-btn
+                        >
                     </v-card-actions>
                 </v-form>
             </v-card>
@@ -91,8 +102,54 @@
 
 <script setup>
 import { ref } from "vue";
+import axios from "axios";
 
 const isCurrentPasswordVisible = ref(false);
 const isNewPasswordVisible = ref(false);
 const isConfirmPasswordVisible = ref(false);
+
+const form = ref({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+});
+
+const errors = ref({});
+
+const resetForm = () => {
+    form.value.currentPassword = "";
+    form.value.newPassword = "";
+    form.value.confirmPassword = "";
+    errors.value = {};
+};
+
+const changePassword = async () => {
+    try {
+        const response = await axios.post(
+            "/api/profile/",
+            {
+                current_password: form.value.currentPassword,
+                new_password: form.value.newPassword,
+                c_new_password: form.value.confirmPassword,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            }
+        );
+        toast.fire({
+            icon: "success",
+            title: "Password changed successfully ",
+        });
+        console.log(response.data);
+        resetForm();
+    } catch (error) {
+        if (error.response && error.response.data.errors) {
+            errors.value = error.response.data.errors;
+        } else {
+            console.error("An unexpected error occurred:", error);
+        }
+    }
+};
 </script>

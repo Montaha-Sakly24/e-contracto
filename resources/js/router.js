@@ -29,6 +29,8 @@ import GabaritsList from "./Pages/GabaritsList.vue";
 
 import CreateContractModel from "./Components/CreateContractModel.vue";
 import ContractModelsList from "./Pages/ContractModelsList.vue";
+import GenerateContract from "./Components/GenerateContract.vue";
+import ContractsList from "./Pages/ContractsList.vue";
 
 const routes = [
     {
@@ -150,6 +152,18 @@ const routes = [
                 path: "profile/account/delete",
                 name: "DeleteAccount",
                 component: DeleteAccount,
+            },
+            {
+                path: "generateContract/:modelId",
+                name: "generateContract",
+                component: GenerateContract,
+                props: true,
+            },
+            {
+                path: "contracts",
+                name: "Contracts ",
+                component: ContractsList,
+                props: true,
             },
         ],
         /*meta: {

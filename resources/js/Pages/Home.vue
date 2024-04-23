@@ -56,17 +56,21 @@
             <v-card-text class="a4-size" elevation="2">
                 {{ model.content }}
             </v-card-text>
-            <v-btn>Generate</v-btn>
+            <v-btn color="orange" @click="showGeneratContractInterface">
+                Generate
+            </v-btn>
         </v-card>
     </v-dialog>
 </template>
 
 <script>
 import axios from "axios";
+import { useRouter } from "vue-router";
 
 export default {
     data() {
         return {
+            router: useRouter(),
             viewDialog: false,
             model: {},
             models: [],
@@ -112,6 +116,18 @@ export default {
                     title: "Error viewing model ",
                 });
             }
+        },
+        showGeneratContractInterface() {
+            if (!this.model || !this.model.id) {
+                console.error(
+                    "Cannot navigate to 'generateContract' without a modelId."
+                );
+                return;
+            }
+            this.router.push({
+                name: "generateContract",
+                params: { modelId: this.model.id.toString() },
+            });
         },
     },
 };

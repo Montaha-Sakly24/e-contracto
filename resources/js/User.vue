@@ -7,9 +7,9 @@
         <v-navigation-drawer
             v-model="drawer"
             app
-            image="https://cdn.vuetifyjs.com/images/backgrounds/bg-2.jpg"
             theme="dark"
             permanent
+            class="nav-drawer"
         >
             <v-list dense nav>
                 <v-list-item>
@@ -18,15 +18,8 @@
                         color="white"
                         contain
                     >
-                        <v-img
-                            src="https://demos.creative-tim.com/vuetify-material-dashboard/favicon.ico"
-                            max-height="60"
-                        />
+                        <v-img :src="logoEcontracto" max-height="200" />
                     </v-list-item-avatar>
-
-                    <v-list-item-content>
-                        <v-list-item-title class="display-1" />
-                    </v-list-item-content>
                 </v-list-item>
             </v-list>
 
@@ -38,6 +31,8 @@
                     :key="index"
                     :to="item.to"
                     class="my-4"
+                    color="black"
+                    rounded="shaped"
                 >
                     <v-list-item-content class="d-flex align-center">
                         <v-list-item-icon>
@@ -89,6 +84,8 @@
 <script>
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
+import contract from "./Pages/contract.png";
+
 export default {
     props: {
         value: {
@@ -102,6 +99,7 @@ export default {
     methods: {},
     data: () => ({
         drawer: false,
+        logoEcontracto: contract,
         items: [
             {
                 icon: "mdi-view-dashboard",
@@ -110,9 +108,14 @@ export default {
             },
 
             {
-                icon: "mdi-view-dashboard",
+                icon: "mdi-account-circle",
                 title: "Profile",
                 to: "/user/profile",
+            },
+            {
+                icon: "mdi-file-outline",
+                title: "Contracts",
+                to: "/user/contracts",
             },
         ],
     }),
@@ -126,5 +129,9 @@ export default {
 
 .content-shifted {
     margin-left: 250px;
+}
+.nav-drawer {
+    border-top-right-radius: 50px;
+    background-image: linear-gradient(30deg, #7aaeb9, #0c4d86);
 }
 </style>

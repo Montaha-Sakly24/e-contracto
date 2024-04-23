@@ -55,14 +55,14 @@
 </template>
 
 <script>
+import { useRouter } from "vue-router";
 export default {
     data() {
         return {
             isAccountDeleted: false,
             dialogVisible: false,
             isAccountDeletedSure: false,
-
-            user: { id: "12" },
+            router: useRouter(),
         };
     },
     methods: {
@@ -71,18 +71,40 @@ export default {
         },
         async deleteProfile() {
             try {
-                const response = await axios.delete(
-                    "/api/profile/" + this.user.id
-                );
-                console.log("Profile deleted successfully:", response.data);
+                const response = await axios.delete("/api/profile/", {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem(
+                            "token"
+                        )}`,
+                    },
+                });
 
+                if (response.status === 200) {
+                    console.log("Profile deleted successfully:", response.data);
+                    // Rediriger vers la page de connexion
+                    this.$router.push({ name: "Login" });
+                } else {
+                    // Afficher un message d'erreur en cas d'échec de la suppression
+                    alert("Failed to delete the account.");
+                }
+
+                // Réinitialiser l'état
                 this.isAccountDeleted = false;
                 this.isAccountDeletedSure = false;
                 this.dialogVisible = false;
             } catch (error) {
-                console.error("Error deleting profile:", error);
+                if (error.response && error.response.status === 401) {
+                    console.error("Unauthorized: Please log in again.");
+                    // Rediriger vers la page de connexion
+                    this.$router.push({ name: "Login" });
+                } else {
+                    console.error("Error deleting profile:", error);
+                    // Afficher un message d'erreur générique en cas d'erreur de la requête
+                    alert("Failed to delete the account. Please try again.");
+                }
             }
         },
+
         cancelDelete() {
             // Reset fields and close dialog
             this.isAccountDeleted = false;

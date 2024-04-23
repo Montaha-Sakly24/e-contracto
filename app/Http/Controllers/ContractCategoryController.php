@@ -63,15 +63,6 @@ class ContractCategoryController extends Controller
 
     }
 
-    public function searchCategory(){
-        $search = request()->get('search');
-
-        $category = ContractCategory::where('title', 'LIKE', "%{$search}%")->get();
-
-        return response()->json($category);
-    }
-
-
     //Supprimer une catégorie de contrat
     public function deleteCategory(ContractCategory $category)
     {
