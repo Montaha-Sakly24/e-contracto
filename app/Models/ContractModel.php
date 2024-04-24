@@ -19,4 +19,9 @@ class ContractModel extends Model
     public function gabarits() {
         return $this->belongsToMany(Gabarit::class, 'contract_models_gabarit');
     }
+
+    public function contracts()
+    {
+        return $this->hasMany(Contract::class);
+    }
 }

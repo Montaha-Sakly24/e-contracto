@@ -13,6 +13,7 @@ use App\Http\Controllers\ContractCategoryController;
 use App\Http\Controllers\PlaceholderController;
 use App\Http\Controllers\GabaritController;
 use App\Http\Controllers\ContractModelController;
+use App\Http\Controllers\ContractController;
 
 /*
 |--------------------------------------------------------------------------
@@ -81,4 +82,15 @@ Route::prefix('models')->group(function () {
     Route::get('/{model}', [ContractModelController::class, 'getModel']);
     Route::put('/{model}', [ContractModelController::class, 'updateModel']);
     Route::delete('/{model}', [ContractModelController::class, 'deleteModel']);
+});
+
+Route::prefix('contracts')->group(function () {
+    Route::post('/', [ContractController::class, 'createContract']);
+    Route::get('/', [ContractController::class, 'getContracts']);
+    Route::get('/{contract}', [ContractController::class, 'getContract']);
+    Route::put('/{contract}', [ContractController::class, 'updateContract']);
+    Route::delete('/{contract}', [ContractController::class, 'deleteContract']);
+    Route::get('/{contract}/export', [ContractController::class, 'exportContract']);
+    Route::post('/{contract}/sign', [ContractController::class, 'signContract']);
+
 });

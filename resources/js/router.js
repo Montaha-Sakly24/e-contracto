@@ -31,6 +31,7 @@ import CreateContractModel from "./Components/CreateContractModel.vue";
 import ContractModelsList from "./Pages/ContractModelsList.vue";
 import GenerateContract from "./Components/GenerateContract.vue";
 import ContractsList from "./Pages/ContractsList.vue";
+import SignatureContract from "./Components/SignatureContract.vue";
 
 const routes = [
     {
@@ -164,6 +165,11 @@ const routes = [
                 name: "Contracts ",
                 component: ContractsList,
                 props: true,
+            },
+            {
+                path: "contracts/sign",
+                name: "Signature",
+                component: SignatureContract,
             },
         ],
         /*meta: {

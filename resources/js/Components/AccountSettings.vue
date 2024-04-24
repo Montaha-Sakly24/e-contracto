@@ -91,7 +91,7 @@
                             color="info"
                             variant="flat"
                             @click="changePassword"
-                            >Save Changes</v-btn
+                            >Change Password</v-btn
                         >
                     </v-card-actions>
                 </v-form>

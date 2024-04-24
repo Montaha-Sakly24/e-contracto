@@ -81,4 +81,5 @@ class ContractModelController extends Controller
             return response()->json(['success' => false, 'message' => 'Something went wrong..Please try again later !']);
         }
     }
+
 }

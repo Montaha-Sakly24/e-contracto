@@ -6,6 +6,7 @@
         "build": "vite build"
     },
     "devDependencies": {
+        "@mdi/font": "^7.4.47",
         "@popperjs/core": "^2.11.6",
         "@vitejs/plugin-vue": "^4.5.0",
         "axios": "^1.6.7",
@@ -16,6 +17,7 @@
         "vue": "^3.4.20"
     },
     "dependencies": {
+        "signature_pad": "^4.2.0",
         "sweetalert2": "^11.10.7",
         "vue-loader": "^17.4.2",
         "vue-router": "^4.3.0",
