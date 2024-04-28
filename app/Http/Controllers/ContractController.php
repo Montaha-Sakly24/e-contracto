@@ -15,7 +15,7 @@ class ContractController extends Controller
     public function createContract(Request $request)
     {
         $validated = $request->validate([
-            'title' => 'required|max:255',
+            'title' => 'max:255',
 
         ]);
 

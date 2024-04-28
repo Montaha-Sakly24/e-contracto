@@ -4,23 +4,21 @@
             href="https://cdn.jsdelivr.net/npm/@mdi/font@5.9.55/css/materialdesignicons.min.css"
             rel="stylesheet"
         />
-        <v-navigation-drawer
-            v-model="drawer"
-            app
-            theme="dark"
-            permanent
-            class="nav-drawer"
-        >
+        <v-navigation-drawer v-model="drawer" app theme="dark" permanent>
             <v-list dense nav>
-                <v-list-item>
+                <v-list-item class="d-flex justify-center">
                     <v-list-item-avatar
-                        class="align-self-center"
-                        color="white"
+                        rounded="lg"
+                        size="100"
+                        class="me-6"
                         contain
                     >
-                        <v-img :src="logoEcontracto" max-height="200" />
+                        <img :src="'/storage/' + account.avatar" />
                     </v-list-item-avatar>
                 </v-list-item>
+                <v-list-item class="d-flex justify-center">
+                    {{ account.name }}</v-list-item
+                >
             </v-list>
 
             <v-divider class="mb-2" />
@@ -48,90 +46,91 @@
             </v-list>
         </v-navigation-drawer>
 
-        <v-app-bar id="app" absolute app color="transparent" flat height="75">
-            <v-btn
-                class="mr-3"
-                elevation="1"
-                fab
-                small
+        <v-app-bar app color="#0c4d86">
+            <v-app-bar-nav-icon
+                variant="text"
                 @click.stop="drawer = !drawer"
-            >
-                <v-icon v-if="value"> mdi-view-quilt </v-icon>
-
-                <v-icon v-else> mdi-dots-vertical </v-icon>
-            </v-btn>
-
-            <v-toolbar-title
-                class="hidden-sm-and-down font-weight-light"
-                v-text="$route.name"
-            />
-            <v-spacer />
-            <v-btn
-                class="ml-2"
-                min-width="0"
-                link
-                exact
-                :to="{ name: 'Login' }"
-            >
-                <v-icon>mdi-logout</v-icon>
-            </v-btn>
+            ></v-app-bar-nav-icon>
+            <v-img :src="logoEcontracto" max-height="80" />
+            <v-spacer></v-spacer>
+            <v-btn @click="viewModels"> Contract Models </v-btn>
         </v-app-bar>
+
         <div class="page-content" :class="{ 'content-shifted': drawer }">
             <router-view></router-view>
         </div>
     </v-app>
 </template>
 <script>
-import { useStore } from "vuex";
+import axios from "axios";
 import { useRouter } from "vue-router";
+import ContractModels from "./Pages/ContractModels.vue";
 import contract from "./Pages/contract.png";
 
 export default {
+    components: {
+        ContractModels,
+    },
     props: {
         value: {
             type: Boolean,
             default: false,
         },
     },
-
-    computed: {},
-
-    methods: {},
-    data: () => ({
-        drawer: false,
-        logoEcontracto: contract,
-        items: [
-            {
-                icon: "mdi-view-dashboard",
-                title: "Home",
-                to: "/user/home",
+    data() {
+        return {
+            router: useRouter(),
+            drawer: false,
+            logoEcontracto: contract,
+            items: [
+                {
+                    icon: "mdi-account-circle",
+                    title: "Profile",
+                    to: "/user/profile",
+                },
+                {
+                    icon: "mdi-file-outline",
+                    title: "Contracts",
+                    to: "/user/contracts",
+                },
+            ],
+            account: {
+                avatar: "",
+                name: "",
             },
-
-            {
-                icon: "mdi-account-circle",
-                title: "Profile",
-                to: "/user/profile",
-            },
-            {
-                icon: "mdi-file-outline",
-                title: "Contracts",
-                to: "/user/contracts",
-            },
-        ],
-    }),
+        };
+    },
+    mounted() {
+        this.fetchProfile();
+    },
+    methods: {
+        async fetchProfile() {
+            const response = await axios.get("/api/profile", {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            });
+            this.account = response.data;
+        },
+        viewModels() {
+            this.$router.push({ name: "contractModels" });
+        },
+        viewCategories() {
+            this.$router.push({ name: "contractCategories" });
+        },
+    },
 };
 </script>
+
 <style scoped>
 .page-content {
     margin-top: 64px;
     transition: margin-left 0.3s;
 }
-
 .content-shifted {
     margin-left: 250px;
 }
-.nav-drawer {
-    border-top-right-radius: 50px;
+.v-navigation-drawer {
     background-image: linear-gradient(30deg, #7aaeb9, #0c4d86);
 }
 </style>

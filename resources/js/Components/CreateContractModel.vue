@@ -17,52 +17,72 @@
                     variant="outlined"
                     required
                 ></v-textarea>
+                <v-textarea
+                    v-model="newModel.content"
+                    label="Content"
+                    variant="outlined"
+                    required
+                ></v-textarea>
             </v-card-text>
         </v-window-item>
         <v-window-item :value="2">
-            <v-card-text>
-                <v-row>
-                    <v-col class="py-11">
-                        <v-sheet
-                            class="mx-auto"
-                            max-width="500"
-                            rounded="xl"
-                            border
-                            ><div class="pa-4">
-                                <v-liste-title> Gabarits List</v-liste-title>
-                                <v-responsive class="overflow-y-auto">
-                                    <v-list>
-                                        <v-list-item
-                                            v-for="gabarit in gabarits"
-                                            :key="gabarit.id"
-                                            @click="appendContent(gabarit)"
+            <v-row>
+                <v-col cols="3" class="sidebar">
+                    <v-card class="pa-4" outlined>
+                        <div class="d-flex justify-between align-center mb-4">
+                            <v-btn @click="all">Tous</v-btn>
+                            <v-btn @click="none">Aucun</v-btn>
+                        </div>
+                        <v-expansion-panels>
+                            <v-expansion-panel
+                                v-for="(gabarit, index) in gabarits"
+                                :key="gabarit.id"
+                            >
+                                <v-expansion-panel-header
+                                    @click="togglePanel(index)"
+                                    draggable="true"
+                                    @dragstart="onDragStart($event, index)"
+                                >
+                                    <div
+                                        class="d-flex justify-between align-center"
+                                    >
+                                        <span class="article-title">{{
+                                            gabarit.title
+                                        }}</span>
+                                        <v-icon v-if="!panel[index]"
+                                            >mdi-chevron-down</v-icon
                                         >
-                                            <v-list-item-content>
-                                                {{ gabarit.content }}
-                                            </v-list-item-content>
-                                        </v-list-item>
-                                    </v-list>
-                                </v-responsive>
-                            </div>
-                        </v-sheet>
-                    </v-col>
-                    <v-col>
-                        <v-container class="d-flex justify-center mt-5">
-                            <v-card class="a4-size" elevation="2"
-                                ><v-textarea
-                                    v-model="newModel.content"
-                                    variant="outlined"
-                                    required
-                                ></v-textarea>
-                            </v-card>
-                        </v-container>
-                    </v-col>
-                </v-row>
-            </v-card-text>
+                                        <v-icon v-else>mdi-chevron-up</v-icon>
+                                    </div>
+                                </v-expansion-panel-header>
+                                <v-expansion-panel-content v-if="panel[index]">
+                                    <v-card>
+                                        <v-card-text>{{
+                                            gabarit.content
+                                        }}</v-card-text>
+                                    </v-card>
+                                </v-expansion-panel-content>
+                            </v-expansion-panel>
+                        </v-expansion-panels>
+                    </v-card>
+                </v-col>
+                <v-col cols="8" class="text-area">
+                    <v-card
+                        class="pa-16"
+                        outlined
+                        @dragover.prevent="allowDrop"
+                        @drop="onDrop"
+                    >
+                        <div v-for="(item, index) in droppedItems" :key="index">
+                            <h2>{{ item.title }}</h2>
+                            <p>{{ item.content }}</p>
+                        </div>
+                    </v-card>
+                </v-col>
+            </v-row>
         </v-window-item>
-        <v-window-item :value="3">
-            <!-- Display list of categories -->
 
+        <v-window-item :value="3">
             <v-list>
                 <v-list-title>Categories List</v-list-title>
                 <v-card-text>
@@ -83,46 +103,34 @@
             </v-list>
         </v-window-item>
     </v-window>
-
     <v-card-actions>
-        <v-btn v-if="step > 1" color="error" variant="text" @click="step--">
-            Back
-        </v-btn>
-        <v-btn
-            v-if="step == 1"
-            color="error"
-            variant="text"
-            @click="resetModel"
+        <v-btn v-if="step > 1" color="error" variant="text" @click="step--"
+            >Back</v-btn
         >
-            Cancel
-        </v-btn>
-        <v-btn v-if="step < 3" color="info" variant="flat" @click="step++">
-            Next
-        </v-btn>
+        <v-btn v-if="step == 1" color="error" variant="text" @click="resetModel"
+            >Cancel</v-btn
+        >
+        <v-btn v-if="step < 3" color="info" variant="flat" @click="step++"
+            >Next</v-btn
+        >
         <v-spacer></v-spacer>
-        <v-btn
-            v-if="step == 3"
-            color="error"
-            variant="text"
-            @click="resetModel"
+        <v-btn v-if="step == 3" color="error" variant="text" @click="resetModel"
+            >Cancel</v-btn
         >
-            Cancel
-        </v-btn>
-        <v-btn
-            v-if="step == 3"
-            color="info"
-            variant="flat"
-            @click="createModel"
+        <v-btn v-if="step == 3" color="info" variant="flat" @click="createModel"
+            >Create</v-btn
         >
-            Create
-        </v-btn>
     </v-card-actions>
 </template>
 <script>
 import axios from "axios";
-
+import Draggable from "vuedraggable";
 import { useRouter } from "vue-router";
+
 export default {
+    components: {
+        Draggable,
+    },
     data() {
         return {
             router: useRouter(),
@@ -133,6 +141,11 @@ export default {
                 description: "",
                 content: "",
             },
+            items: [],
+            panel: [],
+            articleContents: [],
+            droppedItems: [],
+            draggedArticle: { title: "", content: "" },
             gabarits: [],
             gabarit: {},
             categories: [],
@@ -160,10 +173,12 @@ export default {
             try {
                 const response = await axios.get("/api/gabarits");
                 this.gabarits = response.data;
+                this.panel = new Array(this.gabarits.length).fill(false);
             } catch (error) {
                 console.error("Error fetching gabarits:", error);
             }
         },
+
         async fetchCategories() {
             try {
                 const response = await axios.get("/api/categories");
@@ -172,17 +187,38 @@ export default {
                 console.error("Error fetching categories:", error);
             }
         },
-        appendContent(gabarit) {
-            this.newModel.content = gabarit.content;
+        togglePanel(index) {
+            this.panel[index] = !this.panel[index];
         },
+        all() {
+            this.panel = Array(this.items.length).fill(true);
+        },
+        none() {
+            this.panel = Array(this.items.length).fill(false);
+        },
+        allowDrop(event) {
+            event.preventDefault();
+        },
+        onDragStart(event, index) {
+            const gabaritToDrag = this.gabarits[index];
+            event.dataTransfer.setData(
+                "application/json",
+                JSON.stringify(gabaritToDrag)
+            );
+        },
+
+        onDrop(event) {
+            event.preventDefault();
+            const gabaritData = JSON.parse(
+                event.dataTransfer.getData("application/json")
+            );
+            this.droppedItems.push(gabaritData);
+        },
+
         async createModel() {
-            if (
-                !this.newModel.title ||
-                !this.newModel.description ||
-                !this.newModel.content
-            ) {
+            if (!this.newModel.title || !this.newModel.description) {
                 alert(
-                    "All fields, including a category selection, must be filled !"
+                    "All fields, including a category selection, must be filled!"
                 );
                 return;
             }
@@ -193,6 +229,7 @@ export default {
                 category_id: this.selectedCategory
                     ? this.selectedCategory.id
                     : null,
+                gabarits: this.droppedItems.map((item) => item.id),
             };
             try {
                 const response = await axios.post("/api/models", newModelData);
@@ -205,20 +242,31 @@ export default {
             }
         },
         resetModel() {
-            this.router.push({ name: "Contract Models " });
+            this.router.push({ name: "Contract Models" });
         },
     },
 };
 </script>
+
 <style scoped>
-.a4-size {
-    width: 210mm;
-    height: 297mm;
-    background-color: white;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
 .mx-auto {
     margin-left: auto;
     margin-right: auto;
+}
+.article {
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+    cursor: pointer;
+}
+.article-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 10px 5px 18px 10px;
+}
+.sidebar {
+    margin-left: 30px;
+}
+.text-area {
+    margin-left: 40px;
 }
 </style>

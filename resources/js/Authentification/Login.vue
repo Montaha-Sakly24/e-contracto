@@ -132,7 +132,7 @@ export default {
                     } else if (role.includes("Admin")) {
                         router.push({ name: "Home" });
                     } else if (role.includes("Simple User")) {
-                        router.push({ name: "Profile" });
+                        router.push({ name: "contractModels" });
                     }
 
                     swal.fire({

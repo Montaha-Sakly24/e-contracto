@@ -82,6 +82,7 @@ Route::prefix('models')->group(function () {
     Route::get('/{model}', [ContractModelController::class, 'getModel']);
     Route::put('/{model}', [ContractModelController::class, 'updateModel']);
     Route::delete('/{model}', [ContractModelController::class, 'deleteModel']);
+    Route::post('/filter', [ContractModelController::class, 'filterModels']);
 });
 
 Route::prefix('contracts')->group(function () {

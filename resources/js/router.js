@@ -10,7 +10,6 @@ import Superadmin from "./Superadmin.vue";
 import Admin from "./Admin.vue";
 import User from "./User.vue";
 
-import Home from "./Pages/Home.vue";
 import DashboardAdmin from "./Pages/DashboardAdmin.vue";
 import Dashboard from "./Pages/Dashboard.vue";
 import AdminsList from "./Pages/AdminsList.vue";
@@ -22,13 +21,13 @@ import AccountSettings from "./Components/AccountSettings.vue";
 import DeleteAccount from "./Components/DeleteAccount.vue";
 
 import ContractCategoriesList from "./Pages/ContractCategoriesList.vue";
-
 import CustomizedButton from "./Components/CustomizedButton.vue";
 import CreateGabarit from "./Components/CreateGabarit.vue";
 import GabaritsList from "./Pages/GabaritsList.vue";
-
 import CreateContractModel from "./Components/CreateContractModel.vue";
 import ContractModelsList from "./Pages/ContractModelsList.vue";
+
+import ContractModels from "./Pages/ContractModels.vue";
 import GenerateContract from "./Components/GenerateContract.vue";
 import ContractsList from "./Pages/ContractsList.vue";
 import SignatureContract from "./Components/SignatureContract.vue";
@@ -137,7 +136,11 @@ const routes = [
         name: "User",
         component: User,
         children: [
-            { path: "home", name: "Home", component: Home },
+            {
+                path: "contractModels",
+                name: "contractModels",
+                component: ContractModels,
+            },
             { path: "profile", name: "Profile", component: Profile },
             {
                 path: "profile/account",

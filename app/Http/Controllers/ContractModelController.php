@@ -16,7 +16,8 @@ class ContractModelController extends Controller
             'title' => 'required|max:50',
             'description' => 'required|max:255',
             'content' =>'required',
-            // 'gabarits' => 'required|array',
+            'gabarits' => 'required|array',
+            'gabarits.*' => 'exists:gabarits,id',
             'category_id' => 'required|exists:contract_categories,id'
         ]);
         try{
@@ -27,25 +28,16 @@ class ContractModelController extends Controller
                 'category_id' => $validatedData['category_id']
             ]);
 
-            // // Ajouter les gabarits au modèle de contrat
-            // foreach ($validatedData['gabarits'] as $gabaritId) {
-            //     // Vérifiez si le gabarit existe
-            //     $gabarit = Gabarit::find($gabaritId);
+            // Associate gabarits to the contract model
+            if (!empty($validatedData['gabarits'])) {
+                $contractModel->gabarits()->attach($validatedData['gabarits']);
+            }
 
-            //     // Si le gabarit existe, associez-le au modèle de contrat
-            //     if ($gabarit) {
-            //         $contractModel->gabarits()->attach($gabaritId);
-            //     }
-            // }
-
-            // Ajoutez le modèle de contrat à la catégorie correspondante
             $category = ContractCategory::findOrFail($validatedData['category_id']);
             $category->models()->save($contractModel);
 
-            // Retourner une réponse avec le modèle de contrat créé
             return response()->json($contractModel, 201);
         } catch (\Exception $e) {
-            // Handle any exceptions that occur during the creation process
             return response()->json(['error' => $e->getMessage()], 500);
         };
     }
@@ -66,7 +58,7 @@ class ContractModelController extends Controller
         $validated = $request->validate([
             'title' => 'max:50',
             'description'=>'max:255',
-            'content' =>'max:3000',
+            'content' =>'max:10000',
         ]);
         $model->update($validated);
         return response()->json($model,200);
@@ -81,5 +73,15 @@ class ContractModelController extends Controller
             return response()->json(['success' => false, 'message' => 'Something went wrong..Please try again later !']);
         }
     }
+
+    public function filterModels(Request $request)
+    {
+        $categoryIds = $request->input('categories', []);
+
+        $models = ContractModel::whereIn('category_id', $categoryIds)->get();
+
+        return response()->json($models, 200);
+    }
+
 
 }
