@@ -53,7 +53,7 @@
             ></v-app-bar-nav-icon>
             <v-img :src="logoEcontracto" max-height="80" />
             <v-spacer></v-spacer>
-            <v-btn @click="viewModels"> Contract Models </v-btn>
+            <v-btn @click="viewModels"> Home </v-btn>
         </v-app-bar>
 
         <div class="page-content" :class="{ 'content-shifted': drawer }">
@@ -64,12 +64,12 @@
 <script>
 import axios from "axios";
 import { useRouter } from "vue-router";
-import ContractModels from "./Pages/ContractModels.vue";
+import Home from "./Pages/Home.vue";
 import contract from "./Pages/contract.png";
 
 export default {
     components: {
-        ContractModels,
+        Home,
     },
     props: {
         value: {
@@ -93,6 +93,11 @@ export default {
                     title: "Contracts",
                     to: "/user/contracts",
                 },
+                {
+                    icon: "mdi-file-outline",
+                    title: "Chat",
+                    to: "/chat",
+                },
             ],
             account: {
                 avatar: "",
@@ -113,10 +118,7 @@ export default {
             this.account = response.data;
         },
         viewModels() {
-            this.$router.push({ name: "contractModels" });
-        },
-        viewCategories() {
-            this.$router.push({ name: "contractCategories" });
+            this.$router.push({ name: "Home" });
         },
     },
 };

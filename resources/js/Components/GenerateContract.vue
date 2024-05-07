@@ -1,41 +1,57 @@
 <template>
-    <v-container fluid>
+    <v-container class="page_container" fluid>
         <v-row>
-            <!-- Dynamic Form Column -->
-            <v-col>
-                <v-card outlined>
-                    <v-card-text>
-                        <v-form ref="form" v-model="valid">
-                            <v-container>
-                                <v-row>
-                                    <!-- Generate a text field for each placeholder -->
-                                    <v-text-field
-                                        v-for="(value, key) in formFields"
-                                        :key="key"
-                                        v-model="formFields[key]"
-                                        :label="`Enter value for ${key}`"
-                                        required
-                                    ></v-text-field>
-                                </v-row>
-                            </v-container>
-                        </v-form>
-                    </v-card-text>
-                    <v-btn @click="saveContract">Save Contract</v-btn>
-                </v-card>
+            <v-col cols="12" md="4">
+                <v-form ref="form" v-model="valid" class="form-design">
+                    <v-container>
+                        <v-row v-if="model && model.gabarits.length > 0">
+                            <v-col
+                                v-for="(field, index) in paginatedFields"
+                                :key="index"
+                                cols="12"
+                            >
+                                <v-text-field
+                                    :label="`Enter value for ${field.name}`"
+                                    v-model="formFields[field.name]"
+                                    required
+                                    variant="outlined"
+                                ></v-text-field>
+                            </v-col>
+                        </v-row>
+                    </v-container>
+                    <div class="button-group">
+                        <v-btn
+                            v-if="
+                                currentPage === 1 ||
+                                currentPage * fieldsPerPage >= totalFields
+                            "
+                            @click="cancelGenerate"
+                            >Cancel</v-btn
+                        >
+                        <v-btn v-if="currentPage > 1" @click="previousPage"
+                            >Back</v-btn
+                        >
+                        <v-btn
+                            v-if="currentPage * fieldsPerPage < totalFields"
+                            @click="nextPage"
+                            >Next</v-btn
+                        >
+                        <v-btn v-else color="blue" @click="saveContract"
+                            >Save Contract</v-btn
+                        >
+                    </div>
+                </v-form>
             </v-col>
-
-            <!-- Preview Column -->
-            <v-col>
-                <v-card class="a4-size" outlined>
-                    <v-card-title>
-                        Preview
-                        <v-spacer></v-spacer>
+            <v-col cols="12" md="8">
+                <v-card class="a4-size" outlined v-if="model">
+                    <v-card-title class="text-center">
+                        {{ model.title }}
                     </v-card-title>
-                    <v-card-text
-                        v-html="renderedContent"
-                        class="preview-content"
+                    <v-card-text>
+                        <div v-html="previewContent"></div
                     ></v-card-text>
                 </v-card>
+                <v-alert v-if="error" type="error">{{ error }}</v-alert>
             </v-col>
         </v-row>
     </v-container>
@@ -43,60 +59,116 @@
 
 <script>
 import axios from "axios";
+import { useRouter } from "vue-router";
 
 export default {
+    data() {
+        return {
+            router: useRouter(),
+            model: null,
+            error: null,
+            formFields: {},
+            currentPage: 1,
+            fieldsPerPage: 5,
+            totalFields: 0,
+        };
+    },
     props: {
         modelId: {
             type: String,
             required: true,
         },
     },
-    data() {
-        return {
-            model: null,
-            formFields: {},
-            valid: true,
-        };
-    },
     computed: {
-        renderedContent() {
-            if (!this.model) return "";
-            let content = this.model.content;
-            Object.keys(this.formFields).forEach((key) => {
-                const placeholder = new RegExp(`\\[${key}\\]`, "g");
-                content = content.replace(
-                    placeholder,
-                    this.formFields[key] || ""
-                );
+        paginatedFields() {
+            let allPlaceholders = this.model.gabarits.flatMap(
+                (gabarit) => gabarit.placeholders
+            );
+            this.totalFields = allPlaceholders.length;
+            const start = (this.currentPage - 1) * this.fieldsPerPage;
+            const end = start + this.fieldsPerPage;
+            return allPlaceholders.slice(start, end);
+        },
+        previewContent() {
+            if (!this.model || !this.model.content) return "";
+            let preview = this.model.content;
+            const placeholders = preview.match(/\[[^\]]+\]/g) || [];
+            placeholders.forEach((placeholder) => {
+                const key = placeholder.replace(/[\[\]]/g, "");
+                if (this.formFields[key]) {
+                    const regex = new RegExp("\\[" + key + "\\]", "g");
+                    preview = preview.replace(regex, this.formFields[key]);
+                }
             });
-            return content;
+            console.log("Preview Content:", preview);
+            return preview;
         },
     },
+
     mounted() {
         this.fetchModel();
     },
     methods: {
         async fetchModel() {
             try {
-                const response = await axios.get(`/api/models/${this.modelId}`);
+                const response = await axios.get(
+                    `/api/models/${this.modelId}/details`
+                );
                 this.model = response.data;
                 this.initializeFormFields();
+                console.log("model details: ", this.model);
             } catch (error) {
+                this.error = "Error fetching model: " + error.message;
                 console.error("Error fetching model:", error);
             }
         },
         initializeFormFields() {
-            const placeholderRegex = /\[([^\]]+)\]/g;
-            let match;
-            while ((match = placeholderRegex.exec(this.model.content))) {
-                this.formFields[match[1]] = "";
+            this.formFields = {};
+            this.model.gabarits.forEach((gabarit) => {
+                gabarit.placeholders.forEach((placeholder) => {
+                    this.formFields[placeholder.name] = "";
+                    console.log(
+                        "Initialized form field for placeholder:",
+                        placeholder.name
+                    );
+                });
+            });
+        },
+        nextPage() {
+            if (this.currentPage * this.fieldsPerPage < this.totalFields) {
+                this.currentPage++;
             }
         },
-        saveContract() {
-            if (this.valid) {
-                console.log("Contract data to save:", this.formFields);
-                // Perform save operation here
+        previousPage() {
+            if (this.currentPage > 1) {
+                this.currentPage--;
             }
+        },
+        async saveContract() {
+            if (!this.valid) {
+                console.log("Please complete all required fields.");
+                return;
+            }
+            try {
+                const contractData = {
+                    title: this.model.title,
+                    content: this.previewContent,
+                    model_id: this.modelId,
+                };
+                const response = await axios.post(
+                    "/api/contracts/",
+                    contractData
+                );
+                console.log("Contract saved:", response.data);
+                this.router.push({ name: "Contracts" });
+            } catch (error) {
+                console.error("Error saving contract:", error.response.data);
+                this.error =
+                    "Failed to save contract: " + error.response.data.message;
+            }
+        },
+        cancelGenerate() {
+            this.router.push({ name: "Home" });
         },
     },
 };
@@ -104,38 +176,43 @@ export default {
 
 <style scoped>
 .a4-size {
-    width: 210mm;
-    height: 297mm;
-    background-color: white;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.preview-content {
-    max-height: 297mm;
-    overflow-y: auto;
-}
-
-.v-container {
-    padding: 20px;
-}
-
-.v-form {
-    max-width: 500px;
-    margin: 20px auto;
-    padding: 20px;
-    background: #f9f9f9;
+    width: 100%;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    transition: box-shadow 0.3s ease-in-out;
+}
+.form-design {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 }
 
-.v-text-field {
-    margin-bottom: 24px;
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 20px;
+}
+
+.page_container {
+    padding: 20px;
+    background-color: #eeeeee;
 }
 
 .v-btn {
-    margin-top: 20px;
-    width: 100%;
-    padding: 10px 0;
-    font-size: 1.1em;
+    margin: 0 4px;
+}
+
+@media (max-width: 768px) {
+    .button-group {
+        flex-direction: column;
+    }
+    .v-btn {
+        width: 100%;
+        margin-top: 10px;
+    }
 }
 </style>

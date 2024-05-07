@@ -14,6 +14,6 @@ class Contract extends Model
 
     public function contractModel()
     {
-        return $this->belongsTo(ContractModel::class);
+        return $this->belongsTo(ContractModel::class,'model_id');
     }
 }

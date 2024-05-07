@@ -1,130 +1,191 @@
 <template>
-    <v-btn
-        prepend-icon="mdi-file-document"
-        color="info"
-        class="ml-3"
-        @click="showCreateDialog"
-    >
+    <v-btn color="blue" class="ml-3" @click="showCreateDialog">
+        <font-awesome-icon class="icon-side mr-2" :icon="['fas', 'plus']" />
         Add New
     </v-btn>
     <v-dialog
         v-model="createDialog"
-        width="1200"
-        transition="dialog-bottom-transition"
+        persistent
+        :scrollable="false"
+        :hide-overlay="true"
+        no-click-animation
+        width="1600"
+        content-class="custom-vuetify-dialog-add"
     >
-        <v-row>
-            <v-col>
-                <v-sheet class="mx-auto" max-width="400" rounded="xl" border>
-                    <div class="pa-4">
-                        <v-list-title>Placeholders:</v-list-title>
-                        <v-responsive class="overflow-y-auto" max-height="280">
-                            <v-chip-group
-                                v-for="placeholder in placeholders"
-                                :key="placeholder.id"
-                                @click="appendContent(placeholder)"
-                            >
-                                <v-chip>
-                                    {{ placeholder.name }}
-                                </v-chip>
-                            </v-chip-group>
-                        </v-responsive>
-                    </div>
-                </v-sheet>
-            </v-col>
-            <v-col>
-                <v-card width="793">
-                    <v-card-title>Add New Gabarit</v-card-title>
-                    <v-card-text>
-                        <v-text-field
-                            v-model="gabarit.title"
-                            label="Title"
-                            variant="outlined"
-                            required
-                        ></v-text-field>
-                        <v-textarea
-                            v-model="gabarit.content"
-                            ref="content"
-                            label="Content"
-                            variant="outlined"
-                            required
-                        >
-                        </v-textarea>
-                    </v-card-text>
-                    <customized-button></customized-button>
-                    <v-color-picker hide-canvas></v-color-picker>
-                    <v-card-actions>
-                        <v-btn
-                            color="info"
-                            variant="flat"
-                            @click="createGabarit"
-                            >Create</v-btn
-                        >
-                        <v-btn color="error" @click="cancelCreate"
-                            >Cancel</v-btn
-                        >
-                    </v-card-actions>
-                </v-card>
-            </v-col>
-        </v-row>
+        <v-card>
+            <v-card-title class="text-h6 title-modal">
+                <v-label class="label-header">Add new gabarit </v-label>
+            </v-card-title>
+            <v-divider class="line-hr"></v-divider>
+            <v-card-text class="body-card">
+                <v-form class="form-add" ref="formAddGabarit">
+                    <v-row>
+                        <v-col cols="12">
+                            <v-text-field
+                                class="mt-3"
+                                label="Title"
+                                variant="outlined"
+                                color="blue"
+                                v-model="gabarit.title"
+                                ref="title"
+                                persistent-placeholder
+                                :rules="ruleTitle"
+                                clearable
+                            ></v-text-field>
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                        <v-col cols="6">
+                            <v-row>
+                                <v-col
+                                    cols="3"
+                                    v-for="placeholder in getListPlaceholders"
+                                    :key="placeholder.id"
+                                    :title="placeholder.name"
+                                    @click="appendContent(placeholder)"
+                                    class="filed-class d-flex"
+                                >
+                                    <div class="icon-field">☰</div>
+                                    <div class="value-field">
+                                        {{ placeholder.name }}
+                                    </div>
+                                    <div class="icon-copy">
+                                        <font-awesome-icon
+                                            :icon="['fas', 'copy']"
+                                        /></div
+                                ></v-col>
+                            </v-row>
+                        </v-col>
+                        <v-col cols="6">
+                            <Editor
+                                api-key="u3wugla2xzhrdg6u3ikszuh08rf6kydmvb1dlnl5dn3npntm"
+                                :init="computedDataTinymce"
+                                v-model="gabarit.content"
+                            />
+                        </v-col>
+                    </v-row>
+                </v-form>
+            </v-card-text>
+            <!-- <div v-if="error" class="message-error-modal">
+                <ul v-if="Array.isArray(error)" class="mb-0">
+                    <li v-for="(e, index) in error" :key="index">
+                        {{ e }}
+                    </li>
+                </ul>
+                <div class="message-error-modal" v-else>{{ error }}</div>
+            </div> -->
+            <v-divider class="line-hr-footer"></v-divider>
+            <v-card-actions class="actions-msg-btn-modal">
+                <v-spacer></v-spacer>
+                <v-btn
+                    color="#1e0c8c"
+                    variant="elevated"
+                    type="submit"
+                    @click.prevent="addNewGabarit"
+                >
+                    Create
+                </v-btn>
+                <v-btn variant="outlined" @click="cancelCreate"> Cancel </v-btn>
+            </v-card-actions>
+        </v-card>
     </v-dialog>
 </template>
 
 <script>
-import axios from "axios";
-import CustomizedButton from "../Components/CustomizedButton.vue";
+import Editor from "@tinymce/tinymce-vue";
+import { mapActions, mapGetters } from "vuex";
+
 export default {
     components: {
-        CustomizedButton,
+        Editor,
     },
     data() {
         return {
             createDialog: false,
-            drawer: false,
-            placeholders: [],
-            placeholder: {},
-            gabarits: [],
             gabarit: {
                 title: "",
-                content: "",
+                title: "",
+                placeholders: [],
+            },
+            errors: {
+                title: "",
+                title: "",
             },
         };
     },
+    computed: {
+        ...mapGetters(["getListPlaceholders"]),
+        computedDataTinymce() {
+            return {
+                toolbar_mode: "sliding",
+                plugins:
+                    "anchor autolink charmap codesample  link lists media searchreplace visualblocks wordcount checklist mediaembed casechange export formatpainter pageembed linkchecker a11ychecker tinymcespellchecker permanentpen powerpaste advtable advcode editimage advtemplate ai mentions tinycomments tableofcontents footnotes mergetags autocorrect typography inlinecss markdown",
+                toolbar:
+                    "undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | spellcheckdialog typography | align lineheight | checklist numlist bullist indent outdent  | removeformat",
+                tinycomments_mode: "embedded",
+                tinycomments_author: "Author name",
+                mergetags_list: [
+                    { value: "First.Name", title: "First Name" },
+                    { value: "Email", title: "Email" },
+                ],
+                height: "630px",
+                ai_request: (request, respondWith) =>
+                    respondWith.string(() =>
+                        Promise.reject("See docs to implement AI Assistant")
+                    ),
+            };
+        },
+        ruleTitle() {
+            return [(v) => !!v || "Title is required."];
+        },
+    },
     mounted() {
-        this.fetchPlaceholders();
-        this.fetchGabarits();
+        this.getAllPlaceholders();
     },
     methods: {
-        async fetchPlaceholders() {
-            try {
-                const response = await axios.get("/api/placeholders");
-                this.placeholders = response.data;
-            } catch (error) {
-                console.error("Error fetching placeholders:", error);
-            }
-        },
-        async fetchGabarits() {
-            const response = await axios.get("/api/gabarits");
-            this.gabarits = response.data;
-        },
+        ...mapActions(["getAllPlaceholders", "createGabarit"]),
         async showCreateDialog() {
-            this.gabarit.title = "";
-            this.gabarit.content = "";
             this.createDialog = true;
         },
         appendContent(placeholder) {
             this.gabarit.content += ` ${placeholder.identification}`;
         },
-        async createGabarit() {
-            const response = await axios.post("/api/gabarits", this.gabarit);
-            console.log(response);
-            this.createDialog = false;
-            toast.fire({
-                icon: "success",
-                title: "Gabarit created successfully ",
-            });
-            await this.fetchGabarits();
+        extractCodesFromString(text) {
+            const regex = /\[(.*?)\]/g;
+            const matches = [];
+            let match;
+            while ((match = regex.exec(text)) !== null) {
+                matches.push(match[1]);
+            }
+
+            return matches;
+        },
+        async addNewGabarit() {
+            const valid = await this.$refs.formAddGabarit.validate();
+            if (valid.valid) {
+                const placeholders = this.extractCodesFromString(
+                    this.gabarit.content
+                );
+                placeholders.forEach((element) => {
+                    const item = this.getListPlaceholders.find(
+                        (item) => item.identification === `[${element}]`
+                    );
+                    if (item) {
+                        this.gabarit.placeholders.push(item.id);
+                    }
+                });
+                const response = this.createGabarit(this.gabarit);
+                if (response) {
+                    this.cancelCreate();
+                }
+            }
         },
         cancelCreate() {
+            this.gabarit = {
+                title: "",
+                content: "",
+                placeholders: [],
+            };
             this.createDialog = false;
         },
     },
@@ -145,5 +206,90 @@ export default {
 }
 .content-shifted {
     margin-left: 130px;
+}
+</style>
+<style lang="scss">
+.v-dialog.custom-vuetify-dialog-add.v-dialog--active.v-dialog--persistent.v-dialog--scrollable {
+    top: 0 !important;
+    position: absolute !important;
+}
+
+.v-overlay__content.custom-vuetify-dialog-add {
+    top: 0 !important;
+}
+.title-modal {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: blue !important;
+    .label-header {
+        font-weight: 700;
+        font-size: 20px;
+        line-height: 24px;
+        font-family: "Montserrat", sans-serif;
+        margin-bottom: 0px;
+        color: blue !important;
+        text-transform: uppercase;
+    }
+    .btn-close-header {
+        border-radius: 8px;
+        height: 30px !important;
+        width: 30px !important;
+    }
+}
+
+.filed-class {
+    border: 1px solid #6c757d4d;
+    background-color: #ebebeb5c;
+    border-radius: 4px;
+    position: relative;
+    padding: 5px;
+    width: 211px;
+    margin: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: "Montserrat", sans-serif;
+    color: #2a2a2a;
+    margin-right: 0px;
+}
+
+.icon-field {
+    position: absolute;
+    left: 6px;
+    width: 25px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+}
+.icon-copy {
+    position: absolute;
+    right: 6px;
+    width: 25px;
+    top: 30%;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+}
+.value-field {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    margin-left: 25px;
 }
 </style>

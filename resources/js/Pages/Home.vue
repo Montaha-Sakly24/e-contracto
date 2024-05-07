@@ -107,7 +107,7 @@
                 >mdi-close</v-icon
             >
             <v-card-text class="a4-size">
-                {{ model.content }}
+                <div v-html="model.content"></div>
             </v-card-text>
             <v-btn
                 color="orange"

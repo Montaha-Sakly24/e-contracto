@@ -1,10 +1,11 @@
 import { createStore } from "vuex";
+import gabarit from "./modules/gabarit";
 
 const store = createStore({
     state: {
         //define variables
         token: localStorage.getItem("token") || 0,
-        userRole: null,
+        user: null,
     },
 
     mutations: {
@@ -13,8 +14,8 @@ const store = createStore({
             state.token = payload;
         },
 
-        UPDATE_USER_ROLE(state, payload) {
-            state.userRole = payload;
+        SET_USER(state, user) {
+            state.user = user;
         },
     },
 
@@ -29,8 +30,11 @@ const store = createStore({
             context.commit("UPDATE_TOKEN", 0);
         },
 
-        setUserRole(context, payload) {
-            context.commit("UPDATE_USER_ROLE", payload);
+        setUser({ commit }, user) {
+            commit("SET_USER", user);
+        },
+        clearUser({ commit }) {
+            commit("SET_USER", null);
         },
     },
 
@@ -40,10 +44,11 @@ const store = createStore({
             return state.token;
         },
 
-        getUserRole: function (state) {
-            return state.userRole;
+        getUser: function (state) {
+            return state.user;
         },
     },
+    modules: { gabarit },
 });
 
 export default store;

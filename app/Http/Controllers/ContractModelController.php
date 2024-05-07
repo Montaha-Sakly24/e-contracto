@@ -20,6 +20,8 @@ class ContractModelController extends Controller
             'gabarits.*' => 'exists:gabarits,id',
             'category_id' => 'required|exists:contract_categories,id'
         ]);
+
+
         try{
             $contractModel = ContractModel::create([
                 'title' => $validatedData['title'],
@@ -28,7 +30,6 @@ class ContractModelController extends Controller
                 'category_id' => $validatedData['category_id']
             ]);
 
-            // Associate gabarits to the contract model
             if (!empty($validatedData['gabarits'])) {
                 $contractModel->gabarits()->attach($validatedData['gabarits']);
             }
@@ -50,7 +51,39 @@ class ContractModelController extends Controller
 
     public function getModel(ContractModel $model)
     {
-        return response()->json($model,200);
+        $model = ContractModel::with('category')->find($model->id);
+        return response()->json($model);
+    }
+
+    public function getModelDetails($modelId)
+    {
+        $model = ContractModel::with(['gabarits.placeholders'])
+                    ->find($modelId);
+
+        if (!$model) {
+            return response()->json(['message' => 'Model not found'], 404);
+        }
+
+        // Tjib données l associés lb3dhha lkol
+        $modelDetails = [
+            'title' => $model->title,
+            'description' => $model->description,
+            'content' => $model->content,
+            'gabarits' => $model->gabarits->map(function ($gabarit) {
+                return [
+                    'title' => $gabarit->title,
+                    'content' => $gabarit->content,
+                    'placeholders' => $gabarit->placeholders->map(function ($placeholder) {
+                        return [
+                            'name' => $placeholder->name,
+                           // 'type' => $placeholder->type
+                        ];
+                    })
+                ];
+            })
+        ];
+
+        return response()->json($modelDetails);
     }
 
     public function updateModel (Request $request,ContractModel $model)
@@ -59,6 +92,7 @@ class ContractModelController extends Controller
             'title' => 'max:50',
             'description'=>'max:255',
             'content' =>'max:10000',
+
         ]);
         $model->update($validated);
         return response()->json($model,200);

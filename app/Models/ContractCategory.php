@@ -12,12 +12,14 @@ class ContractCategory extends Model
     protected $fillable =
     [
         'title',
-        'description'
+        'description',
+
+
     ];
 
     public function models()
     {
-        return $this->hasMany(ContractModel::class ,'model_id');
+        return $this->hasMany(ContractModel::class,'category_id');
     }
 
 }

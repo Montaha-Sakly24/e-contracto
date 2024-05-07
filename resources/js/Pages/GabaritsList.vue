@@ -1,42 +1,41 @@
 <template>
-    <v-container class="page-container" fluid>
+    <div class="page-container">
         <v-card>
-            <v-card-title class="d-flex align-center pe-2">
-                <v-icon icon="mdi-folder"></v-icon>
+            <v-card-title class="d-flex align-center card-title">
                 Gabarits List
                 <v-spacer></v-spacer>
                 <create-gabarit></create-gabarit>
             </v-card-title>
-            <v-data-table :headers="headers" :items="gabarits">
+            <v-data-table :headers="headers" :items="getListGabarit">
                 <template v-slot:item="{ item }">
                     <tr>
                         <td>{{ item.id }}</td>
                         <td>{{ item.title }}</td>
-
                         <td>
                             <div class="action-buttons">
                                 <v-btn
-                                    prepend-icon="mdi-eye"
-                                    color="info"
+                                    color="blue"
+                                    variant="outlined"
                                     @click="viewGabarit(item)"
                                 >
-                                    View
+                                    <font-awesome-icon
+                                        class="pr-2"
+                                        :icon="['fas', 'eye']"
+                                    />View
                                 </v-btn>
+                                <update-gabarit
+                                    :item="item.id"
+                                ></update-gabarit>
 
                                 <v-btn
-                                    prepend-icon="mdi-pencil"
-                                    color="warning"
-                                    @click="showUpdateDialog(item)"
-                                >
-                                    Update
-                                </v-btn>
-
-                                <v-btn
-                                    prepend-icon="mdi-delete"
                                     color="red"
+                                    variant="outlined"
                                     @click="deleteGabarit(item)"
                                 >
-                                    Delete
+                                    <font-awesome-icon
+                                        class="pr-2"
+                                        :icon="['fas', 'trash']"
+                                    />Delete
                                 </v-btn>
                             </div>
                         </td>
@@ -45,68 +44,60 @@
             </v-data-table>
         </v-card>
         <v-dialog
-        v-model="viewDialog"
-        transition="dialog-bottom-transition"
-        max-width="793"
-    >
-        <v-card class="dialog-card" variant="flat">
-            <v-card-title
-                class="title text-uppercase font-weight-bold font-italic"
-            >
-                {{ gabarit.title }}
-                <v-icon
-                    @click="viewDialog = false"
-                    style="position: absolute; top: 10px; right: 10px"
-                    >mdi-close
-                </v-icon>
-            </v-card-title>
-            <v-card-text>
-                <p><b>Content: </b><pre> {{ gabarit.content }}</pre></p>
-            </v-card-text>
-        </v-card>
-    </v-dialog>
-    <v-dialog v-model="updateDialog" max-width="400px">
-        <v-card>
-            <v-card-title>{{ gabarit.title }}</v-card-title>
-            <v-card-text>
-                <p>Title</p>
-                <v-text-field
-                    v-model="newGabarit.title"
-                    variant="outlined"
-                    required
-                ></v-text-field>
-                <p>Content</p>
-                <v-textarea
-                    v-model="newGabarit.content"
-                    variant="outlined"
-                    required
-                ></v-textarea>
-            </v-card-text>
-            <v-card-actions>
-                <v-btn color="info" variant="flat" @click="updateGabarit">
-                    Save changes
-                </v-btn>
-                <v-btn color="error" @click="cancelUpdate">Cancel</v-btn>
-            </v-card-actions>
-        </v-card>
-    </v-dialog>
-    </v-container>
+            v-model="viewDialog"
+            persistent
+            :scrollable="false"
+            :hide-overlay="true"
+            no-click-animation
+            width="900"
+            content-class="custom-vuetify-dialog-add"
+        >
+            <v-card>
+                <v-card-title class="text-h6 title-modal">
+                    <v-label class="label-header">View Gabarit </v-label>
+                    <v-btn
+                        class="btn-close-header"
+                        icon
+                        @click="cancelView"
+                        title="Close"
+                        color="blue"
+                    >
+                        <font-awesome-icon :icon="['fas', 'xmark']" />
+                    </v-btn>
+                </v-card-title>
+                <v-divider class="line-hr"></v-divider>
+                <v-card-text class="body-card" v-if="getOneGabarit">
+                    <p><strong>Title : </strong> {{ getOneGabarit.title }}</p>
+                    <p><strong>Content : </strong></p>
+                    <div v-html="getOneGabarit.content"></div>
+                </v-card-text>
+                <v-divider class="line-hr-footer"></v-divider>
+                <v-card-actions class="actions-msg-btn-modal">
+                    <v-spacer></v-spacer>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+    </div>
 </template>
+
 <script>
 import CreateGabarit from "../Components/CreateGabarit.vue";
+import UpdateGabarit from "../Components/UpdateGabarit.vue";
+
 import axios from "axios";
+import { mapActions, mapGetters } from "vuex";
 
 export default {
     components: {
         CreateGabarit,
+        UpdateGabarit,
     },
 
-data() {
+    data() {
         return {
             gabarit: {},
             gabarits: [],
             viewDialog: false,
-            updateDialog: false,
             newGabarit: {
                 title: "",
                 content: "",
@@ -115,7 +106,6 @@ data() {
                 {
                     title: "#",
                     align: "start",
-
                     key: "id",
                 },
                 { title: "Title", key: "title", sortable: false },
@@ -130,26 +120,19 @@ data() {
         };
     },
     mounted() {
-        this.fetchGabarits();
+        this.getAllGabarits();
+    },
+    computed: {
+        ...mapGetters(["getListGabarit", "getOneGabarit"]),
     },
     methods: {
-        async fetchGabarits() {
-            try {
-                const response = await axios.get("/api/gabarits");
-                this.gabarits = response.data;
-            } catch (error) {
-                console.error("Error fetching gabarits:", error);
-            }
-        },
+        ...mapActions(["getAllGabarits", "getGabaritById"]),
 
         async viewGabarit(gabarit) {
-            try {
-                const response = await axios.get(
-                    "/api/gabarits/" + gabarit.id
-                );
-                this.gabarit = response.data;
+            const response = await this.getGabaritById(gabarit.id);
+            if (response) {
                 this.viewDialog = true;
-            } catch (error) {
+            } else {
                 console.error("Error viewing gabarit:", error);
                 toast.fire({
                     icon: "error",
@@ -158,36 +141,8 @@ data() {
             }
         },
 
-        showUpdateDialog(gabarit) {
-            this.gabarit = { ...gabarit };
-            this.newGabarit.title = gabarit.title;
-            this.newGabarit.content = gabarit.content;
-            this.updateDialog = true;
-        },
-        async updateGabarit(gabarit) {
-            try {
-                const response = await axios.put(
-                    `/api/gabarits/${this.gabarit.id}`,
-                    this.newGabarit
-                );
-                this.gabarits = this.gabarits.map(cat =>
-                    cat.id === this.gabarit.id ? { ...cat, ...response.data } : cat
-                );
-                this.updateDialog = false;
-                toast.fire({
-                    icon: "success",
-                    title: "Gabarit updated successfully ",
-                });
-            } catch (error) {
-                console.error("Error updating gabarit:", error);
-                toast.fire({
-                    icon: "error",
-                    title: "Error updating gabarit ",
-                });
-            }
-        },
-        cancelUpdate() {
-            this.updateDialog = false;
+        cancelView() {
+            this.viewDialog = false;
         },
 
         deleteGabarit(gabarit) {
@@ -210,7 +165,7 @@ data() {
                                     gabarit.title +
                                     " has been deleted sucessfully",
                             });
-                            this.fetchGabarits();
+                            this.getAllGabarits();
                         })
                         .catch(() => {
                             toast.fire({
@@ -227,7 +182,7 @@ data() {
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .page-container {
     background-color: #f2f2f2;
     display: flex;
@@ -235,18 +190,19 @@ data() {
     min-height: 100vh;
     padding: 20px;
 }
+.card-component {
+    width: 1550px;
+    height: 780px;
+}
+.card-title {
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #1a1ab3;
+    font-family: serif;
+}
 .action-buttons {
     display: flex;
     gap: 8px;
     justify-content: center;
-}
-
-.dialog-card {
-    padding: 20px;
-}
-
-.title,
-b {
-    font-family: "Times New Roman", Times, serif;
 }
 </style>

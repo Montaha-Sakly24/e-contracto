@@ -13,5 +13,10 @@ class Placeholder extends Model
     [
         'name',
         'identification',
+        'type'
     ];
+
+    public function gabarits() {
+        return $this->belongsToMany(Gabarit::class, 'contract_models_gabarit');
+    }
 }

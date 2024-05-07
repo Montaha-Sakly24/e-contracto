@@ -32,7 +32,7 @@ class ContractCategoryController extends Controller
 
 
     //Consulter liste catégories de contrat
-    public function showlisteCategories()
+    public function getListCategories()
     {
         $categories = ContractCategory::all();
         return response()->json($categories,200);
@@ -40,9 +40,10 @@ class ContractCategoryController extends Controller
 
 
     //Consulter catégorie de contrat
-    public function showCategory(ContractCategory $category)
+    public function getCategory($id)
     {
-        return response()->json($category,200);
+        $category = ContractCategory::with('models')->findOrFail($id);  // 'models' is the name of the relationship method defined in the model
+        return response()->json($category);
     }
 
 

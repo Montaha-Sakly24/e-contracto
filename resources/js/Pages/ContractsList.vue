@@ -1,8 +1,7 @@
 <template>
     <v-container class="page-container" fluid>
         <v-card>
-            <v-card-title class="d-flex align-center pe-2">
-                <v-icon icon="mdi-folder"></v-icon>
+            <v-card-title class="d-flex align-center card-title">
                 Contracts List
             </v-card-title>
             <v-data-table :headers="headers" :items="contracts">
@@ -10,34 +9,58 @@
                     <tr>
                         <td>{{ item.id }}</td>
                         <td>{{ item.title }}</td>
-                        <td>{{ item.status }}</td>
 
                         <td>
+                            <span
+                                :class="{
+                                    'text-orange': item.status === 'unsigned',
+                                    'text-success': item.status !== 'unsigned',
+                                }"
+                            >
+                                {{ item.status }}
+                            </span>
+                        </td>
+                        <td>
                             <div class="action-buttons">
-                                <v-btn color="info" @click="viewContract(item)">
-                                    <v-icon>mdi-eye</v-icon>
-                                </v-btn>
-
                                 <v-btn
-                                    color="warning"
-                                    @click="showUpdateDialog(item)"
-                                >
-                                    <v-icon>mdi-pencil</v-icon>
-                                </v-btn>
-
-                                <v-btn
-                                    color="red"
-                                    @click="deleteContract(item)"
-                                >
-                                    <v-icon>mdi-delete</v-icon>
+                                    color="blue"
+                                    variant="outlined"
+                                    @click="viewContract(item)"
+                                    ><font-awesome-icon
+                                        class="pr-2"
+                                        :icon="['fas', 'eye']"
+                                    />
+                                    View
                                 </v-btn>
 
                                 <v-btn
                                     color="darkblue"
+                                    variant="outlined"
+                                    @click="showUpdateDialog(item)"
+                                    ><font-awesome-icon
+                                        class="pr-2"
+                                        :icon="['fas', 'pen-alt']"
+                                    />
+                                    Update
+                                </v-btn>
+
+                                <v-btn
+                                    color="red"
+                                    variant="outlined"
+                                    @click="deleteContract(item)"
+                                    ><font-awesome-icon
+                                        class="pr-2"
+                                        :icon="['fas', 'trash']"
+                                    />
+                                    Delete
+                                </v-btn>
+
+                                <v-btn
+                                    variant="outlined"
                                     @click="toggleSignDialog(item)"
-                                    :disabled="item.isSigned"
+                                    :disabled="item.status === 'signed'"
                                 >
-                                    <v-icon>mdi-edit-document</v-icon>
+                                    Sign
                                 </v-btn>
                             </div>
                         </td>
@@ -45,32 +68,50 @@
                 </template>
             </v-data-table>
         </v-card>
+
         <v-dialog
             v-model="viewDialog"
-            transition="dialog-bottom-transition"
-            max-width="793"
+            persistent
+            :scrollable="false"
+            :hide-overlay="true"
+            no-click-animation
+            width="800"
+            content-class="custom-vuetify-dialog-add"
         >
-            <v-btn color="neutralgray" @click="exportContract(contract)">
+            <v-btn
+                icon
+                @click="viewDialog = false"
+                title="Close"
+                color="muted"
+                class="dialog-close-btn"
+            >
+                <font-awesome-icon :icon="['fas', 'xmark']" />
+            </v-btn>
+            <v-btn
+                color="darkblueshade"
+                @click="exportContract(contract)"
+                class="export-btn"
+            >
                 <v-icon>mdi-download</v-icon> Export
             </v-btn>
 
-            <v-card class="dialog-card" variant="flat">
-                <v-card-title
-                    class="title text-uppercase font-weight-bold font-italic"
-                >
+            <v-card class="dialog-card">
+                <v-card-title class="text-center">
                     {{ contract.title }}
-                    <v-icon
-                        @click="viewDialog = false"
-                        style="position: absolute; top: 10px; right: 10px"
-                        >mdi-close
-                    </v-icon>
                 </v-card-title>
                 <v-card-text>
-                    <p>{{ contract.content }}</p>
-                    <img :src="contract.signature" alt="Signature" />
+                    <div v-html="contract.content"></div>
+
+                    <img
+                        v-if="contract.signature"
+                        :src="contract.signature"
+                        alt="Signature"
+                        class="signature-image"
+                    />
                 </v-card-text>
             </v-card>
         </v-dialog>
+
         <v-dialog v-model="updateDialog" max-width="400px">
             <v-card>
                 <v-card-title>{{ contract.title }}</v-card-title>
@@ -97,12 +138,37 @@
             </v-card>
         </v-dialog>
 
-        <v-dialog v-model="showSignDialog" transition="dialog-bottom-transition"
-            ><v-card
-                >{{ contract.content }}
-                <signature-contract
-                    @signatureSaved="onSignatureSaved"
-                ></signature-contract>
+        <v-dialog
+            v-model="showSignDialog"
+            persistent
+            :scrollable="false"
+            :hide-overlay="true"
+            no-click-animation
+            width="800"
+            content-class="custom-vuetify-dialog-add"
+        >
+            <v-btn
+                icon
+                @click="showSignDialog = false"
+                title="Close"
+                color="muted"
+                class="dialog-close-btn"
+            >
+                <font-awesome-icon :icon="['fas', 'xmark']" />
+            </v-btn>
+
+            <v-card class="dialog-card">
+                <v-card-title class="text-center">
+                    {{ contract.title }}
+                </v-card-title>
+                <v-card-text>
+                    <div v-html="contract.content"></div>
+                </v-card-text>
+                <div class="signature-section">
+                    <signature-contract
+                        @signatureSaved="onSignatureSaved"
+                    ></signature-contract>
+                </div>
             </v-card>
         </v-dialog>
     </v-container>
@@ -246,17 +312,10 @@ export default {
             const url = `/api/contracts/${contract.id}/export`;
             window
                 .open(url, "_blank")
-                .addEventListener(
-                    "load",
-                    () => {
-                        // L'API a répondu avec succès
-                    },
-                    false
-                )
+
                 .addEventListener(
                     "error",
                     () => {
-                        // Une erreur s'est produite lors de l'exportation
                         alert(
                             "Failed to export contract. Please try again later."
                         );
@@ -266,7 +325,8 @@ export default {
         },
         toggleSignDialog(contract) {
             this.contract = contract;
-            this.showSignDialog = !this.showSignDialog;
+            this.showSignDialog = true;
+            alert("The contract can only be signed once.");
         },
         onSignatureSaved(signatureData) {
             this.signContract(this.contract, signatureData);
@@ -278,8 +338,12 @@ export default {
                     { signature_data: signatureData }
                 );
                 console.log(response.data.message);
-                contract.status = "signed";
-                contract.isSigned = true;
+                toast.fire({
+                    icon: "success",
+                    title: contract.title + " has been signed sucessfully",
+                });
+                this.showSignDialog = false;
+                this.fetchContracts();
             } catch (error) {
                 console.error("Error signing contract:", error);
             }
@@ -296,18 +360,54 @@ export default {
     min-height: 100vh;
     padding: 20px;
 }
+.card-title {
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #1a1ab3;
+    font-family: serif;
+}
 .action-buttons {
     display: flex;
     gap: 8px;
     justify-content: center;
 }
 
-.dialog-card {
-    padding: 20px;
-}
-
 .title,
 b {
     font-family: "Times New Roman", Times, serif;
+}
+.dialog-container {
+    position: relative;
+}
+
+.dialog-close-btn,
+.export-btn {
+    position: absolute;
+    top: 10px;
+    z-index: 10;
+}
+
+.dialog-close-btn {
+    right: 10px;
+    border-radius: 8px;
+    height: 37px !important;
+    width: 40px !important;
+}
+
+.export-btn {
+    right: 60px;
+}
+
+.dialog-card {
+    padding: 20px;
+    margin-top: 55px;
+}
+.signature-section {
+    display: flex;
+    justify-content: end;
+}
+.signature-image {
+    max-width: 200px;
+    height: auto;
 }
 </style>

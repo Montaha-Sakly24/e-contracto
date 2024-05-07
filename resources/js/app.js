@@ -1,20 +1,45 @@
 import "./bootstrap";
 import { createApp } from "vue";
 import vuetify from "./vuetify";
-import router from "./router";
+import router from "./router.js";
 import store from "./store/index";
 
 import App from "./App.vue";
-import SignaturePad from "signature_pad";
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import {
+    faPhone,
+    faPuzzlePiece,
+    faFileContract,
+    faRightFromBracket,
+    faPlus,
+    faXmark,
+    faCopy,
+    faEye,
+    faPenAlt,
+    faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 
 const app = createApp({});
-
+library.add(
+    faPhone,
+    faPuzzlePiece,
+    faFileContract,
+    faRightFromBracket,
+    faPlus,
+    faXmark,
+    faCopy,
+    faEye,
+    faPenAlt,
+    faTrash
+);
 app.component("application", App);
 
-app.use(router).use(vuetify).use(store).mount("#app");
-
-// Ajoutez SignaturePad comme une propriété globale d'application Vue.js
-app.config.globalProperties.$SignaturePad = SignaturePad;
+app.use(router)
+    .use(vuetify)
+    .use(store)
+    .component("font-awesome-icon", FontAwesomeIcon)
+    .mount("#app");
 
 import Swal from "sweetalert2";
 window.swal = Swal;

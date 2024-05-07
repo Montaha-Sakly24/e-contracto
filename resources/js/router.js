@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import store from "./store/index";
 
+import Chat from "./Pages/Chat.vue";
 import Login from "./Authentification/Login.vue";
 import Register from "./Authentification/Register.vue";
 import ForgotPassword from "./Authentification/ForgotPassword.vue";
@@ -23,14 +24,16 @@ import DeleteAccount from "./Components/DeleteAccount.vue";
 import ContractCategoriesList from "./Pages/ContractCategoriesList.vue";
 import CustomizedButton from "./Components/CustomizedButton.vue";
 import CreateGabarit from "./Components/CreateGabarit.vue";
+import UpdateGabarit from "./Components/UpdateGabarit.vue";
 import GabaritsList from "./Pages/GabaritsList.vue";
 import CreateContractModel from "./Components/CreateContractModel.vue";
 import ContractModelsList from "./Pages/ContractModelsList.vue";
 
-import ContractModels from "./Pages/ContractModels.vue";
+import Home from "./Pages/Home.vue";
 import GenerateContract from "./Components/GenerateContract.vue";
 import ContractsList from "./Pages/ContractsList.vue";
 import SignatureContract from "./Components/SignatureContract.vue";
+import ContractSendForm from "./Components/ContractSendForm.vue";
 
 const routes = [
     {
@@ -66,6 +69,15 @@ const routes = [
         },*/
     },
     {
+        path: "/chat",
+        name: "Chat",
+        component: Chat,
+        /*meta: {
+            requiresAuth: false,
+        },*/
+    },
+
+    {
         path: "/admin",
         component: Admin,
         children: [
@@ -89,6 +101,11 @@ const routes = [
                 component: CreateGabarit,
             },
             {
+                path: "gabarits/Update",
+                name: "Update Gabarit",
+                component: UpdateGabarit,
+            },
+            {
                 path: "gabarits",
                 name: "Gabarits",
                 component: GabaritsList,
@@ -101,7 +118,7 @@ const routes = [
             },
             {
                 path: "models",
-                name: "Contract Models ",
+                name: "Contract Models",
                 component: ContractModelsList,
             },
         ],
@@ -137,9 +154,9 @@ const routes = [
         component: User,
         children: [
             {
-                path: "contractModels",
-                name: "contractModels",
-                component: ContractModels,
+                path: "home",
+                name: "Home",
+                component: Home,
             },
             { path: "profile", name: "Profile", component: Profile },
             {
@@ -165,7 +182,7 @@ const routes = [
             },
             {
                 path: "contracts",
-                name: "Contracts ",
+                name: "Contracts",
                 component: ContractsList,
                 props: true,
             },
@@ -173,6 +190,11 @@ const routes = [
                 path: "contracts/sign",
                 name: "Signature",
                 component: SignatureContract,
+            },
+            {
+                path: "contracts/sendForm",
+                name: "ContractSendForm",
+                component: ContractSendForm,
             },
         ],
         /*meta: {

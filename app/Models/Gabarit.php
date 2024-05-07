@@ -14,4 +14,8 @@ class Gabarit extends Model
     public function contractModels() {
         return $this->belongsToMany(ContractModel::class, 'contract_models_gabarit');
     }
+
+    public function placeholders() {
+        return $this->belongsToMany(Placeholder::class, 'gabarits_placeholders');
+    }
 }

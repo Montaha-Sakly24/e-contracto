@@ -1,9 +1,9 @@
 <template>
     <v-container class="page-container" fluid>
         <v-card>
-            <v-card-title class="d-flex align-center pe-2">
-                <v-icon icon="mdi-account-group"></v-icon>
-                Samples Users List
+            <v-card-title class="d-flex align-center card-title">
+                <v-icon icon="mdi-account-group pr-3"></v-icon>
+                Contract Seekers List
 
                 <v-spacer></v-spacer>
 
@@ -48,22 +48,29 @@
                         <td>
                             <div class="action-buttons">
                                 <v-btn
-                                    prepend-icon="mdi-eye"
-                                    color="info"
+                                    color="blue"
+                                    variant="outlined"
                                     @click="viewUser(item)"
-                                >
+                                    ><font-awesome-icon
+                                        class="pr-2"
+                                        :icon="['fas', 'eye']"
+                                    />
                                     View
                                 </v-btn>
 
                                 <v-btn
-                                    prepend-icon="mdi-delete"
                                     color="red"
+                                    variant="outlined"
                                     @click="deleteUser(item)"
-                                >
+                                    ><font-awesome-icon
+                                        class="pr-2"
+                                        :icon="['fas', 'trash']"
+                                    />
                                     Delete
                                 </v-btn>
 
                                 <v-btn
+                                    variant="outlined"
                                     :color="
                                         item.status === 1 ? 'error' : 'success'
                                     "
@@ -91,24 +98,33 @@
     </v-container>
     <v-dialog
         v-model="viewDialog"
-        transition="dialog-bottom-transition"
-        max-width="570"
+        persistent
+        :scrollable="false"
+        :hide-overlay="true"
+        no-click-animation
+        width="600"
+        content-class="custom-vuetify-dialog-add"
     >
-        <v-card class="dialog-card" variant="flat">
+        <v-card>
             <v-card-title
-                class="custom-border title text-uppercase font-weight-bold font-italic"
+                class="title text-uppercase font-weight-bold font-italic title-modal"
                 ><v-avatar size="65">
                     <img :src="'/storage/' + user.avatar" alt="User's Avatar" />
                 </v-avatar>
                 {{ user.name }}
                 Profil
+                <v-btn
+                    class="btn-close-header"
+                    icon
+                    @click="viewDialog = false"
+                    title="Close"
+                    color="blue"
+                >
+                    <font-awesome-icon :icon="['fas', 'xmark']" />
+                </v-btn>
             </v-card-title>
-            <v-icon
-                @click="viewDialog = false"
-                style="position: absolute; top: 5px; right: 5px"
-                >mdi-close
-            </v-icon>
-            <v-card-text class="custom-border">
+            <v-divider class="line-hr"></v-divider>
+            <v-card-text>
                 <p><b>Name: </b> {{ user.name }}</p>
                 <p><b>Email: </b>{{ user.email }}</p>
                 <p><b>Phone: </b>{{ user.phone }}</p>
@@ -148,7 +164,11 @@ export default {
                 { title: "Name", key: "name", sortable: false },
                 { title: "Email", key: "email", sortable: false },
                 { title: "Status", key: "status", sortable: false },
-                { title: "Actions", key: "actions", sortable: false },
+                {
+                    title: "Actions",
+                    key: "actions",
+                    sortable: false,
+                },
             ],
         };
     },
@@ -241,24 +261,19 @@ export default {
     min-height: 100vh;
     padding: 20px;
 }
+.card-title {
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #1a1ab3;
+    font-family: serif;
+}
 .action-buttons {
     display: flex;
     gap: 8px;
 }
 
-.dialog-card {
-    padding: 25px;
-    border: 1px solid #032846;
-}
-
 .title,
 b {
     font-family: "Times New Roman", Times, serif;
-}
-
-.custom-border {
-    border: 1px solid #347eba; /* Light grey border */
-    padding: 8px;
-    margin-bottom: 10px;
 }
 </style>

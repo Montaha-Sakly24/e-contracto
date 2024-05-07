@@ -130,12 +130,73 @@ class PlaceholderSeeder extends Seeder
             '[Deadline]',
             '[Signature]',
          ];
-         $placeholdersWithInfo = array_map(null, $placeholders, $identifications);
+
+         $type= [
+            'short text',
+            'short text',
+            'short text',
+            'short text',
+            'email',
+            'number',
+            'short text',
+            'email',
+            'number',
+
+            'short text',
+            'short text',
+            'short text',
+            'number',
+            'short text',
+            'short text',
+
+            'Date',
+            'Date',
+            'Date',
+            'Date',
+            'short text',
+            'short text',
+            'short text',
+
+            'number',
+            'number',
+            'number',
+            'number',
+            'short text',
+            'Date',
+            'short text',
+            'number',
+            'short text',
+            'short text',
+            'number',
+            'Date',
+            'number',
+
+            'number',
+            'short text',
+            'text',
+            'number',
+            'number',
+            'date',
+            'date',
+
+            'img',
+            'text',
+            'short text',
+            'text',
+            'liste',
+            'short text',
+            'text',
+            'date',
+            'text',
+         ];
+
+         $placeholdersWithInfo = array_map(null, $placeholders, $identifications,$type);
 
          foreach ($placeholdersWithInfo as $placeholderInfo) {
              $placeholder = new Placeholder([
                  'name' => $placeholderInfo[0],
                  'identification' => $placeholderInfo[1],
+                 'type' => $placeholderInfo[2],
              ]);
              $placeholder->save();
          }

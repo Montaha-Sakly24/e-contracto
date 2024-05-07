@@ -17,12 +17,6 @@
                     variant="outlined"
                     required
                 ></v-textarea>
-                <v-textarea
-                    v-model="newModel.content"
-                    label="Content"
-                    variant="outlined"
-                    required
-                ></v-textarea>
             </v-card-text>
         </v-window-item>
         <v-window-item :value="2">
@@ -57,9 +51,11 @@
                                 </v-expansion-panel-header>
                                 <v-expansion-panel-content v-if="panel[index]">
                                     <v-card>
-                                        <v-card-text>{{
-                                            gabarit.content
-                                        }}</v-card-text>
+                                        <v-card-text v-model="newModel.content"
+                                            ><div
+                                                v-html="gabarit.content"
+                                            ></div>
+                                        </v-card-text>
                                     </v-card>
                                 </v-expansion-panel-content>
                             </v-expansion-panel>
@@ -74,8 +70,7 @@
                         @drop="onDrop"
                     >
                         <div v-for="(item, index) in droppedItems" :key="index">
-                            <h2>{{ item.title }}</h2>
-                            <p>{{ item.content }}</p>
+                            <div v-html="item.content"></div>
                         </div>
                     </v-card>
                 </v-col>
@@ -93,7 +88,6 @@
                         item-value="id"
                         label="Select a Category"
                         return-object
-                        @change="handleCategoryChange"
                         variant="solo"
                         chips
                         color="blue"
@@ -213,10 +207,15 @@ export default {
                 event.dataTransfer.getData("application/json")
             );
             this.droppedItems.push(gabaritData);
+            this.newModel.content += gabaritData.content + "\n";
         },
 
         async createModel() {
-            if (!this.newModel.title || !this.newModel.description) {
+            if (
+                !this.newModel.title ||
+                !this.newModel.description ||
+                !this.selectedCategory
+            ) {
                 alert(
                     "All fields, including a category selection, must be filled!"
                 );
@@ -234,11 +233,17 @@ export default {
             try {
                 const response = await axios.post("/api/models", newModelData);
                 console.log("Model created:", response.data);
-                this.$toast.success("Model created successfully");
-                this.resetModel();
+                toast.fire({
+                    icon: "success",
+                    title: " Model created successfully",
+                });
+                this.router.push({ name: "Contract Models" });
             } catch (error) {
                 console.error("Error creating model:", error);
-                this.$toast.error("Error creating model");
+                toast.fire({
+                    icon: "error",
+                    title: " Error creating model",
+                });
             }
         },
         resetModel() {

@@ -15,6 +15,8 @@ use App\Http\Controllers\GabaritController;
 use App\Http\Controllers\ContractModelController;
 use App\Http\Controllers\ContractController;
 
+use App\Http\Controllers\ChatController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -60,8 +62,8 @@ Route::prefix('profile')->middleware('auth:sanctum')->group(function () {
 //Route::apiResource('categories', 'ContractCategoryController');
 Route::prefix('categories')->group(function () {
     Route::post('/', [ContractCategoryController::class, 'createCategory']);
-    Route::get('/', [ContractCategoryController::class, 'showlisteCategories']);
-    Route::get('/{category}', [ContractCategoryController::class, 'showCategory']);
+    Route::get('/', [ContractCategoryController::class, 'getListCategories']);
+    Route::get('/{category}', [ContractCategoryController::class, 'getCategory']);
     Route::put('/{category}', [ContractCategoryController::class, 'updateCategory']);
     Route::delete('/{category}', [ContractCategoryController::class, 'deleteCategory']);
 });
@@ -80,18 +82,24 @@ Route::prefix('models')->group(function () {
     Route::post('/', [ContractModelController::class, 'createModel']);
     Route::get('/', [ContractModelController::class, 'getAllModels']);
     Route::get('/{model}', [ContractModelController::class, 'getModel']);
+    Route::get('/{modelId}/details', [ContractModelController::class, 'getModelDetails']);
     Route::put('/{model}', [ContractModelController::class, 'updateModel']);
     Route::delete('/{model}', [ContractModelController::class, 'deleteModel']);
     Route::post('/filter', [ContractModelController::class, 'filterModels']);
 });
 
 Route::prefix('contracts')->group(function () {
-    Route::post('/', [ContractController::class, 'createContract']);
+    Route::post('/', [ContractController::class, 'generateContract']);
     Route::get('/', [ContractController::class, 'getContracts']);
     Route::get('/{contract}', [ContractController::class, 'getContract']);
     Route::put('/{contract}', [ContractController::class, 'updateContract']);
     Route::delete('/{contract}', [ContractController::class, 'deleteContract']);
     Route::get('/{contract}/export', [ContractController::class, 'exportContract']);
     Route::post('/{contract}/sign', [ContractController::class, 'signContract']);
+    Route::post('/send-contract', [ContractController::class, 'sendContract']);
 
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/messages', [ChatController::class, 'sendMessage']);
 });

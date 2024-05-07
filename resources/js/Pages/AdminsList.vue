@@ -1,17 +1,16 @@
 <template>
     <v-container class="page-container" fluid>
         <v-card>
-            <v-card-title class="d-flex align-center pe-2">
-                <v-icon icon="mdi-account-group"></v-icon>
+            <v-card-title class="d-flex align-center card-title">
+                <v-icon icon="mdi-account-group pr-3"></v-icon>
                 Admins List
 
                 <v-spacer></v-spacer>
-                <v-btn
-                    prepend-icon="mdi-plus-circle"
-                    color="info"
-                    class="ml-3"
-                    @click="showCreateDialog"
-                >
+                <v-btn color="blue" class="ml-3" @click="showCreateDialog">
+                    <font-awesome-icon
+                        class="icon-side mr-2"
+                        :icon="['fas', 'plus']"
+                    />
                     Add New
                 </v-btn>
                 <v-text-field
@@ -55,22 +54,29 @@
                         <td>
                             <div class="action-buttons">
                                 <v-btn
-                                    prepend-icon="mdi-eye"
-                                    color="info"
+                                    color="blue"
+                                    variant="outlined"
                                     @click="viewAdmin(item)"
-                                >
+                                    ><font-awesome-icon
+                                        class="pr-2"
+                                        :icon="['fas', 'eye']"
+                                    />
                                     View
                                 </v-btn>
 
                                 <v-btn
-                                    prepend-icon="mdi-delete"
                                     color="red"
+                                    variant="outlined"
                                     @click="deleteAdmin(item)"
-                                >
+                                    ><font-awesome-icon
+                                        class="pr-2"
+                                        :icon="['fas', 'trash']"
+                                    />
                                     Delete
                                 </v-btn>
 
                                 <v-btn
+                                    variant="outlined"
                                     :color="
                                         item.status === 1 ? 'error' : 'success'
                                     "
@@ -96,9 +102,13 @@
             </v-data-table>
         </v-card>
     </v-container>
-    <v-dialog v-model="createDialog" max-width="700px">
+    <v-dialog v-model="createDialog" max-width="750px">
         <v-card>
-            <v-card-title>Add New Admin </v-card-title>
+            <v-card-title
+                class="title text-uppercase font-weight-bold font-italic title-modal"
+                >Add New Admin
+            </v-card-title>
+            <v-divider class="line-hr"></v-divider>
             <v-card-text>
                 <v-row>
                     <v-col cols="6">
@@ -106,34 +116,23 @@
                             v-model="newAdmin.name"
                             label="Name"
                             variant="outlined"
-                            required
-                            :error-messages="
-                                errors && errors.name ? errors.name : []
-                            "
+                            :rules="ruleTitle"
                         ></v-text-field>
                         <v-text-field
                             v-model="newAdmin.phone"
                             label="Phone"
                             variant="outlined"
-                            required
-                            :error-messages="
-                                errors && errors.phone ? errors.phone : []
-                            "
                         ></v-text-field>
                         <v-text-field
                             v-model="newAdmin.password"
                             label="Password"
                             variant="outlined"
-                            required
                             :type="isPasswordVisible ? 'text' : 'password'"
                             :append-inner-icon="
                                 isPasswordVisible ? 'mdi-eye' : 'mdi-eye-off'
                             "
                             @click:append-inner="
                                 isPasswordVisible = !isPasswordVisible
-                            "
-                            :error-messages="
-                                errors && errors.password ? errors.password : []
                             "
                         ></v-text-field>
                     </v-col>
@@ -142,25 +141,16 @@
                             v-model="newAdmin.email"
                             label="Email"
                             variant="outlined"
-                            required
-                            :error-messages="
-                                errors && errors.email ? errors.email : []
-                            "
                         ></v-text-field>
                         <v-text-field
                             v-model="newAdmin.address"
                             label="Address"
                             variant="outlined"
-                            required
-                            :error-messages="
-                                errors && errors.address ? errors.address : []
-                            "
                         ></v-text-field>
                         <v-text-field
                             v-model="newAdmin.c_password"
                             label="Confirm Password"
                             variant="outlined"
-                            required
                             :type="
                                 isConfirmPasswordVisible ? 'text' : 'password'
                             "
@@ -173,44 +163,54 @@
                                 isConfirmPasswordVisible =
                                     !isConfirmPasswordVisible
                             "
-                            :error-messages="
-                                errors && errors.c_password
-                                    ? errors.c_password
-                                    : []
-                            "
                         ></v-text-field>
                     </v-col>
                 </v-row>
             </v-card-text>
-            <v-card-actions>
-                <v-btn color="info" variant="flat" @click="createAdminAccount"
-                    >Create</v-btn
+            <v-divider class="line-hr-footer"></v-divider>
+            <v-card-actions class="actions-msg-btn-modal">
+                <v-spacer></v-spacer>
+                <v-btn variant="outlined" @click="cancelCreate">Cancel</v-btn>
+                <v-btn
+                    color="#1e0c8c"
+                    variant="elevated"
+                    @click="createAdminAccount"
                 >
-                <v-btn color="error" @click="cancelCreate">Cancel</v-btn>
+                    Create
+                </v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
 
     <v-dialog
         v-model="viewDialog"
-        transition="dialog-bottom-transition"
-        max-width="570"
+        persistent
+        :scrollable="false"
+        :hide-overlay="true"
+        no-click-animation
+        width="600"
+        content-class="custom-vuetify-dialog-add"
     >
-        <v-card class="dialog-card" variant="flat">
+        <v-card>
             <v-card-title
-                class="custom-border title text-uppercase font-weight-bold font-italic"
+                class="title text-uppercase font-weight-bold font-italic title-modal"
                 ><v-avatar size="65">
                     <img :src="'/storage/' + user.avatar" alt="User's Avatar" />
                 </v-avatar>
                 {{ user.name }}
                 Profil
+                <v-btn
+                    class="btn-close-header"
+                    icon
+                    @click="viewDialog = false"
+                    title="Close"
+                    color="blue"
+                >
+                    <font-awesome-icon :icon="['fas', 'xmark']" />
+                </v-btn>
             </v-card-title>
-            <v-icon
-                @click="viewDialog = false"
-                style="position: absolute; top: 5px; right: 5px"
-                >mdi-close
-            </v-icon>
-            <v-card-text class="custom-border">
+            <v-divider class="line-hr"></v-divider>
+            <v-card-text>
                 <p><b>Name: </b> {{ user.name }}</p>
                 <p><b>Email: </b>{{ user.email }}</p>
                 <p><b>Phone: </b>{{ user.phone }}</p>
@@ -264,6 +264,11 @@ export default {
                 c_password: "",
             },
         };
+    },
+    computed: {
+        ruleTitle() {
+            return [(v) => !!v || "Title is required."];
+        },
     },
     mounted() {
         this.fetchAdmins();
@@ -396,21 +401,19 @@ export default {
     min-height: 100vh;
     padding: 20px;
 }
+.card-title {
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #1a1ab3;
+    font-family: serif;
+}
 .action-buttons {
     display: flex;
     gap: 8px;
-}
-.dialog-card {
-    padding: 25px;
 }
 
 .title,
 b {
     font-family: "Times New Roman", Times, serif;
-}
-.custom-border {
-    border: 1px solid #347eba; /* Light grey border */
-    padding: 8px;
-    margin-bottom: 10px;
 }
 </style>

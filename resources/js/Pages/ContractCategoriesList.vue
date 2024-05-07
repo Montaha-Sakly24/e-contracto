@@ -1,24 +1,19 @@
 <template>
     <v-container class="page-container" fluid>
         <v-card>
-            <v-card-title class="d-flex align-center pe-2">
-                <v-icon icon="mdi-folder"></v-icon>
+            <v-card-title class="d-flex align-center card-title">
                 Categories List
                 <v-spacer></v-spacer>
-                <v-btn
-                    prepend-icon="mdi-plus-circle"
-                    color="info"
-                    class="ml-3"
-                    @click="showCreateDialog"
-                >
+                <v-btn color="blue" class="ml-3" @click="showCreateDialog">
+                    <font-awesome-icon
+                        class="icon-side mr-2"
+                        :icon="['fas', 'plus']"
+                    />
                     Add New
                 </v-btn>
             </v-card-title>
 
-            <v-data-table
-                :headers="headers"
-                :items="categories"
-            >
+            <v-data-table :headers="headers" :items="categories">
                 <template v-slot:item="{ item }">
                     <tr>
                         <td>{{ item.id }}</td>
@@ -27,26 +22,36 @@
                         <td>
                             <div class="action-buttons">
                                 <v-btn
-                                    prepend-icon="mdi-eye"
-                                    color="info"
+                                    color="blue"
+                                    variant="outlined"
                                     @click="viewCategory(item)"
-                                >
+                                    ><font-awesome-icon
+                                        class="pr-2"
+                                        :icon="['fas', 'eye']"
+                                    />
                                     View
                                 </v-btn>
 
                                 <v-btn
-                                    prepend-icon="mdi-pencil"
-                                    color="warning"
+                                    color="darkblue"
+                                    variant="outlined"
                                     @click="showUpdateDialog(item)"
                                 >
+                                    <font-awesome-icon
+                                        class="pr-2"
+                                        :icon="['fas', 'pen-alt']"
+                                    />
                                     Update
                                 </v-btn>
 
                                 <v-btn
-                                    prepend-icon="mdi-delete"
                                     color="red"
+                                    variant="outlined"
                                     @click="deleteCategory(item)"
-                                >
+                                    ><font-awesome-icon
+                                        class="pr-2"
+                                        :icon="['fas', 'trash']"
+                                    />
                                     Delete
                                 </v-btn>
                             </div>
@@ -86,22 +91,45 @@
 
     <v-dialog
         v-model="viewDialog"
-        transition="dialog-bottom-transition"
-        max-width="793"
+        persistent
+        :scrollable="false"
+        :hide-overlay="true"
+        no-click-animation
+        width="600"
+        content-class="custom-vuetify-dialog-add"
     >
-        <v-card class="dialog-card" variant="flat">
+        <v-card>
             <v-card-title
-                class="title text-uppercase font-weight-bold font-italic"
+                class="title text-uppercase font-weight-bold font-italic title-modal"
             >
                 {{ category.title }}
-                <v-icon
+
+                <v-btn
+                    class="btn-close-header"
+                    icon
                     @click="viewDialog = false"
-                    style="position: absolute; top: 10px; right: 10px"
-                    >mdi-close
-                </v-icon>
+                    title="Close"
+                    color="blue"
+                >
+                    <font-awesome-icon :icon="['fas', 'xmark']" />
+                </v-btn>
             </v-card-title>
+            <v-divider class="line-hr"></v-divider>
             <v-card-text>
-                <p><b>Description: </b><pre> {{ category.description }}</pre></p>
+                <p><b>Description: </b></p>
+                <div>{{ category.description }}</div>
+                <br />
+                <p><b>List of Models: </b></p>
+                <v-list dense>
+                    <v-list-item
+                        v-for="model in category.models"
+                        :key="model.id"
+                    >
+                        <v-list-item-content>
+                            <li>{{ model.title }}</li>
+                        </v-list-item-content>
+                    </v-list-item>
+                </v-list>
             </v-card-text>
         </v-card>
     </v-dialog>
@@ -141,6 +169,8 @@ export default {
         return {
             category: {},
             categories: [],
+            models: [],
+            model: {},
             createDialog: false,
             viewDialog: false,
             updateDialog: false,
@@ -168,6 +198,13 @@ export default {
     },
     mounted() {
         this.fetchCategories();
+    },
+    watch: {
+        viewDialog(val) {
+            if (val) {
+                this.fetchModelsByCategory(this.category.id);
+            }
+        },
     },
     methods: {
         async fetchCategories() {
@@ -234,6 +271,21 @@ export default {
             }
         },
 
+        async fetchModelsByCategory(categoryId) {
+            try {
+                const response = await axios.get(
+                    "/api/categories/" + categoryId
+                );
+                this.models = response.data;
+            } catch (error) {
+                console.error("Error fetching models by category:", error);
+                toast.fire({
+                    icon: "error",
+                    title: "Error fetching models by category",
+                });
+            }
+        },
+
         showUpdateDialog(category) {
             this.category = { ...category };
             this.newCategory.title = category.title;
@@ -246,8 +298,10 @@ export default {
                     `/api/categories/${this.category.id}`,
                     this.newCategory
                 );
-                this.categories = this.categories.map(cat =>
-                    cat.id === this.category.id ? { ...cat, ...response.data } : cat
+                this.categories = this.categories.map((cat) =>
+                    cat.id === this.category.id
+                        ? { ...cat, ...response.data }
+                        : cat
                 );
                 this.updateDialog = false;
                 toast.fire({
@@ -309,6 +363,13 @@ export default {
     flex-direction: column;
     min-height: 100vh;
     padding: 20px;
+}
+
+.card-title {
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #1a1ab3;
+    font-family: serif;
 }
 .action-buttons {
     display: flex;

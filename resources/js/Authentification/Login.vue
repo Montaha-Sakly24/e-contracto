@@ -125,14 +125,19 @@ export default {
             try {
                 const response = await axios.post("/api/login", form);
                 if (response.data.success) {
+                    //
+                    const userId = response.data.data.userId;
+                    console.log("User ID before storing:", userId);
+                    localStorage.setItem("userId", userId);
+                    //
                     store.dispatch("setToken", response.data.data.token);
                     const role = response.data.data.role;
                     if (role.includes("Superadmin")) {
                         router.push({ name: "Dashboard" });
                     } else if (role.includes("Admin")) {
-                        router.push({ name: "Home" });
+                        router.push({ name: "Dashboard Admin" });
                     } else if (role.includes("Simple User")) {
-                        router.push({ name: "contractModels" });
+                        router.push({ name: "Home" });
                     }
 
                     swal.fire({

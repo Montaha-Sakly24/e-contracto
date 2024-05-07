@@ -1,16 +1,14 @@
 <template>
     <v-container class="page-container" fluid>
         <v-card>
-            <v-card-title class="d-flex align-center pe-2">
-                <v-icon icon="mdi-folder"></v-icon>
+            <v-card-title class="d-flex align-center card-title">
                 Models List
                 <v-spacer></v-spacer>
-                <v-btn
-                    prepend-icon="mdi-file-document"
-                    color="info"
-                    class="ml-3"
-                    @click="showCreateInterface"
-                >
+                <v-btn color="blue" class="ml-3" @click="showCreateInterface">
+                    <font-awesome-icon
+                        class="icon-side mr-2"
+                        :icon="['fas', 'plus']"
+                    />
                     Add New
                 </v-btn>
             </v-card-title>
@@ -23,26 +21,35 @@
                         <td>
                             <div class="action-buttons">
                                 <v-btn
-                                    prepend-icon="mdi-eye"
-                                    color="info"
+                                    color="blue"
+                                    variant="outlined"
                                     @click="viewModel(item)"
-                                >
+                                    ><font-awesome-icon
+                                        class="pr-2"
+                                        :icon="['fas', 'eye']"
+                                    />
                                     View
                                 </v-btn>
 
                                 <v-btn
-                                    prepend-icon="mdi-pencil"
-                                    color="warning"
+                                    color="darkblue"
+                                    variant="outlined"
                                     @click="showUpdateDialog(item)"
-                                >
+                                    ><font-awesome-icon
+                                        class="pr-2"
+                                        :icon="['fas', 'pen-alt']"
+                                    />
                                     Update
                                 </v-btn>
 
                                 <v-btn
-                                    prepend-icon="mdi-delete"
                                     color="red"
+                                    variant="outlined"
                                     @click="deleteModel(item)"
-                                >
+                                    ><font-awesome-icon
+                                        class="pr-2"
+                                        :icon="['fas', 'trash']"
+                                    />
                                     Delete
                                 </v-btn>
                             </div>
@@ -51,58 +58,57 @@
                 </template>
             </v-data-table>
         </v-card>
-        <v-dialog
-        v-model="viewDialog"
-        transition="dialog-bottom-transition"
-        max-width="793"
-    >
-        <v-card class="dialog-card" variant="flat">
-            <v-card-title
-                class="title text-uppercase font-weight-bold font-italic"
-            >
-                {{ model.title }}
-                <v-icon
-                    @click="viewDialog = false"
-                    style="position: absolute; top: 10px; right: 10px"
-                    >mdi-close
-                </v-icon>
-            </v-card-title>
-            <v-card-text>
-                <p><b>Description: </b><pre> {{ model.description }}</pre></p>
-                <p><b>Content: </b><pre> {{ model.content }}</pre></p>
-            </v-card-text>
-        </v-card>
-    </v-dialog>
-    <v-dialog v-model="updateDialog" max-width="400px">
-        <v-card>
-            <v-card-title>{{ model.title }}</v-card-title>
-            <v-card-text>
-                <p>Title</p>
-                <v-text-field
-                    v-model="newModel.title"
-                    variant="outlined"
-                    required
-                ></v-text-field>
-                <p>Content</p>
-                <v-textarea
-                    v-model="newModel.description"
-                    variant="outlined"
-                    required
-                ></v-textarea>
-                <v-textarea
-                    v-model="newModel.content"
-                    variant="outlined"
-                    required
-                ></v-textarea>
-            </v-card-text>
-            <v-card-actions>
-                <v-btn color="info" variant="flat" @click="updateModel">
-                    Save changes
-                </v-btn>
-                <v-btn color="error" @click="cancelUpdate">Cancel</v-btn>
-            </v-card-actions>
-        </v-card>
-    </v-dialog>
+        <v-dialog v-model="viewDialog" transition="dialog-bottom-transition">
+            <v-card class="dialog-card" variant="flat">
+                <v-card-title
+                    class="title text-uppercase font-weight-bold font-italic"
+                >
+                    {{ model.title }}
+                    <v-icon
+                        @click="viewDialog = false"
+                        style="position: absolute; top: 10px; right: 10px"
+                        >mdi-close
+                    </v-icon>
+                </v-card-title>
+                <v-card-text>
+                    <b>Description: </b>{{ model.description }} <br /><br />
+                    <b>Category:</b> {{ model.category.title }}
+                </v-card-text>
+                <v-card-text class="a4-size">
+                    <div v-html="model.content"></div>
+                </v-card-text>
+            </v-card>
+        </v-dialog>
+        <v-dialog v-model="updateDialog" max-width="400px">
+            <v-card>
+                <v-card-title>{{ model.title }}</v-card-title>
+                <v-card-text>
+                    <p>Title</p>
+                    <v-text-field
+                        v-model="newModel.title"
+                        variant="outlined"
+                        required
+                    ></v-text-field>
+                    <p>Content</p>
+                    <v-textarea
+                        v-model="newModel.description"
+                        variant="outlined"
+                        required
+                    ></v-textarea>
+                    <v-textarea
+                        v-model="newModel.content"
+                        variant="outlined"
+                        required
+                    ></v-textarea>
+                </v-card-text>
+                <v-card-actions>
+                    <v-btn color="info" variant="flat" @click="updateModel">
+                        Save changes
+                    </v-btn>
+                    <v-btn color="error" @click="cancelUpdate">Cancel</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
     </v-container>
 </template>
 
@@ -115,7 +121,7 @@ export default {
     components: {
         CreateContractModel,
     },
-data() {
+    data() {
         return {
             router: useRouter(),
             model: {},
@@ -157,22 +163,18 @@ data() {
                 console.error("Error fetching models:", error);
             }
         },
-        showCreateInterface(){
+
+        showCreateInterface() {
             this.router.push({ name: "Create Contract Model" });
         },
+
         async viewModel(model) {
             try {
-                const response = await axios.get(
-                    "/api/models/" + model.id
-                );
+                const response = await axios.get("/api/models/" + model.id);
                 this.model = response.data;
                 this.viewDialog = true;
             } catch (error) {
                 console.error("Error viewing model:", error);
-                toast.fire({
-                    icon: "error",
-                    title: "Error viewing model ",
-                });
             }
         },
 
@@ -189,8 +191,10 @@ data() {
                     `/api/models/${this.model.id}`,
                     this.newModel
                 );
-                this.models = this.models.map(cat =>
-                    cat.id === this.model.id ? { ...cat, ...response.data } : cat
+                this.models = this.models.map((cat) =>
+                    cat.id === this.model.id
+                        ? { ...cat, ...response.data }
+                        : cat
                 );
                 this.updateDialog = false;
                 toast.fire({
@@ -254,6 +258,12 @@ data() {
     min-height: 100vh;
     padding: 20px;
 }
+.card-title {
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #1a1ab3;
+    font-family: serif;
+}
 .action-buttons {
     display: flex;
     gap: 8px;
@@ -263,7 +273,14 @@ data() {
 .dialog-card {
     padding: 20px;
 }
-
+.a4-size {
+    align-self: center;
+    width: 210mm;
+    height: 297mm;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+    overflow-y: auto;
+}
 .title,
 b {
     font-family: "Times New Roman", Times, serif;

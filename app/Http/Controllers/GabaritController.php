@@ -8,33 +8,22 @@ use Illuminate\Http\Request;
 class GabaritController extends Controller
 {
     public function createGabarit(Request $request){
-        // Valider les données de la requête
-        $request->validate([
+
+        $validatedData = $request->validate([
             'title' => 'required|string',
             'content' => 'string|max:3000',
-            'placeholders' => 'array'
+            'placeholders' => 'array',
+            'placeholders.*' => 'integer|exists:placeholders,id'
         ]);
-
-        // Créer un nouvel gabarit avec le titre et la contenu fournis
         $gabarit = Gabarit::create([
             'title' => $request->input('title'),
             'content' => $request->input('content')
         ]);
 
-        // Ajouter les placeholders à la contenu de gabarit
         if ($request->filled('placeholders')) {
-            $content = $request->input('content');
-
-            // Parcourir les placeholders et les ajouter au gabarit
-            foreach ($request->input('placeholders') as $placeholder) {
-                $content .= " {{$placeholder}}"; // Ajouter le placeholder à la contenu
-            }
-
-            // Mettre à jour la contenu de gabarit avec les placeholders
-            $gabarit->update(['content' => $content]);
+            $gabarit->placeholders()->attach($request->input('placeholders'));
         }
 
-        // Répondre avec le nouveau gabarit
         return response()->json(['gabarit' => $gabarit], 201);
     }
 
