@@ -34,17 +34,6 @@
                                 </v-btn>
 
                                 <v-btn
-                                    color="darkblue"
-                                    variant="outlined"
-                                    @click="showUpdateDialog(item)"
-                                    ><font-awesome-icon
-                                        class="pr-2"
-                                        :icon="['fas', 'pen-alt']"
-                                    />
-                                    Update
-                                </v-btn>
-
-                                <v-btn
                                     color="red"
                                     variant="outlined"
                                     @click="deleteContract(item)"
@@ -96,9 +85,6 @@
             </v-btn>
 
             <v-card class="dialog-card">
-                <v-card-title class="text-center">
-                    {{ contract.title }}
-                </v-card-title>
                 <v-card-text>
                     <div v-html="contract.content"></div>
 
@@ -109,32 +95,6 @@
                         class="signature-image"
                     />
                 </v-card-text>
-            </v-card>
-        </v-dialog>
-
-        <v-dialog v-model="updateDialog" max-width="400px">
-            <v-card>
-                <v-card-title>{{ contract.title }}</v-card-title>
-                <v-card-text>
-                    <p>Title</p>
-                    <v-text-field
-                        v-model="newContract.title"
-                        variant="outlined"
-                        required
-                    ></v-text-field>
-                    <p>Content</p>
-                    <v-textarea
-                        v-model="newContract.content"
-                        variant="outlined"
-                        required
-                    ></v-textarea>
-                </v-card-text>
-                <v-card-actions>
-                    <v-btn color="info" variant="flat" @click="updateContract">
-                        Save changes
-                    </v-btn>
-                    <v-btn color="error" @click="cancelUpdate">Cancel</v-btn>
-                </v-card-actions>
             </v-card>
         </v-dialog>
 
@@ -158,9 +118,6 @@
             </v-btn>
 
             <v-card class="dialog-card">
-                <v-card-title class="text-center">
-                    {{ contract.title }}
-                </v-card-title>
                 <v-card-text>
                     <div v-html="contract.content"></div>
                 </v-card-text>
@@ -189,12 +146,7 @@ export default {
             contract: {},
             contracts: [],
             viewDialog: false,
-            updateDialog: false,
             showSignDialog: false,
-            newContract: {
-                title: "",
-                content: "",
-            },
             headers: [
                 {
                     title: "#",
@@ -219,7 +171,13 @@ export default {
     methods: {
         async fetchContracts() {
             try {
-                const response = await axios.get("/api/contracts");
+                const response = await axios.get("/api/contracts/user", {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem(
+                            "token"
+                        )}`,
+                    },
+                });
                 this.contracts = response.data;
             } catch (error) {
                 console.error("Error fetching contracts:", error);
@@ -239,40 +197,6 @@ export default {
                     title: "Error viewing contract ",
                 });
             }
-        },
-
-        showUpdateDialog(contract) {
-            this.contract = { ...contract };
-            this.newContract.title = contract.title;
-            this.newContract.content = contract.content;
-            this.updateDialog = true;
-        },
-        async updateContract(contract) {
-            try {
-                const response = await axios.put(
-                    `/api/contracts/${this.contract.id}`,
-                    this.newContract
-                );
-                this.contracts = this.contracts.map((cat) =>
-                    cat.id === this.contract.id
-                        ? { ...cat, ...response.data }
-                        : cat
-                );
-                this.updateDialog = false;
-                toast.fire({
-                    icon: "success",
-                    title: "Contract updated successfully ",
-                });
-            } catch (error) {
-                console.error("Error updating contract:", error);
-                toast.fire({
-                    icon: "error",
-                    title: "Error updating contract ",
-                });
-            }
-        },
-        cancelUpdate() {
-            this.updateDialog = false;
         },
 
         deleteContract(contract) {
@@ -311,7 +235,7 @@ export default {
         exportContract(contract) {
             const url = `/api/contracts/${contract.id}/export`;
             window
-                .open(url, "_blank")
+                .open(url, "_parent")
 
                 .addEventListener(
                     "error",

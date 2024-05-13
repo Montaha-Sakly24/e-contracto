@@ -6,6 +6,7 @@ use App\Models\ContractModel;
 use App\Models\Gabarit;
 use App\Models\ContractCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ContractModelController extends Controller
 {
@@ -23,11 +24,14 @@ class ContractModelController extends Controller
 
 
         try{
+            $user = Auth::user();
+
             $contractModel = ContractModel::create([
                 'title' => $validatedData['title'],
                 'description' => $validatedData['description'],
                 'content' => $validatedData['content'],
-                'category_id' => $validatedData['category_id']
+                'category_id' => $validatedData['category_id'],
+                'user_id' => $user->id,
             ]);
 
             if (!empty($validatedData['gabarits'])) {

@@ -13,7 +13,7 @@ class Placeholder extends Model
     [
         'name',
         'identification',
-        'type'
+
     ];
 
     public function gabarits() {

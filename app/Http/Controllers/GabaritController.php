@@ -38,16 +38,28 @@ class GabaritController extends Controller
         return response()->json($gabarit,200);
     }
 
-    public function updateGabarit (Request $request,Gabarit $gabarit)
+    public function updateGabarit(Request $request, Gabarit $gabarit)
     {
         $validated = $request->validate([
             'title' => 'max:25',
-            'content' =>'max:3000',
+            'content' => 'max:3000',
+            'placeholders' => 'array',
+            'placeholders.*' => 'integer|exists:placeholders,id'
         ]);
-        $gabarit->update($validated);
-        return response()->json($gabarit,200);
 
+        $gabarit->update([
+            'title' => $validated['title'],
+            'content' => $validated['content']
+        ]);
+
+        if (isset($validated['placeholders'])) {
+            $gabarit->placeholders()->sync($validated['placeholders']);
+        }
+
+        return response()->json($gabarit, 200);
     }
+
+
 
     public function deleteGabarit(Gabarit $gabarit)
     {

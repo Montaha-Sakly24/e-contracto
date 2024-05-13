@@ -61,19 +61,13 @@
                                 api-key="u3wugla2xzhrdg6u3ikszuh08rf6kydmvb1dlnl5dn3npntm"
                                 :init="computedDataTinymce"
                                 v-model="gabarit.content"
+                                :id="'myEditor'"
                             />
                         </v-col>
                     </v-row>
                 </v-form>
             </v-card-text>
-            <!-- <div v-if="error" class="message-error-modal">
-                <ul v-if="Array.isArray(error)" class="mb-0">
-                    <li v-for="(e, index) in error" :key="index">
-                        {{ e }}
-                    </li>
-                </ul>
-                <div class="message-error-modal" v-else>{{ error }}</div>
-            </div> -->
+
             <v-divider class="line-hr-footer"></v-divider>
             <v-card-actions class="actions-msg-btn-modal">
                 <v-spacer></v-spacer>
@@ -148,7 +142,21 @@ export default {
             this.createDialog = true;
         },
         appendContent(placeholder) {
-            this.gabarit.content += ` ${placeholder.identification}`;
+            const editor = tinymce.get("myEditor");
+            if (editor) {
+                const selection = editor.selection;
+                const content = selection.getContent();
+                const node = editor.selection.getNode();
+                const isTextNode = node && node.nodeType === 3;
+
+                if (isTextNode) {
+                    selection.setContent(
+                        content + ` ${placeholder.identification}`
+                    );
+                } else {
+                    selection.setContent(`${placeholder.identification} `);
+                }
+            }
         },
         extractCodesFromString(text) {
             const regex = /\[(.*?)\]/g;

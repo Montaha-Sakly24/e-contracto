@@ -76,7 +76,7 @@
                 min-width="0"
                 link
                 exact
-                :to="{ name: 'Login' }"
+                @click.prevent="logout"
             >
                 <v-icon>mdi-logout</v-icon>
             </v-btn>
@@ -99,7 +99,12 @@ export default {
 
     computed: {},
 
-    methods: {},
+    methods: {
+        logout() {
+            localStorage.clear();
+            this.$router.push({ name: "Login" });
+        },
+    },
     data: () => ({
         drawer: false,
         items: [
@@ -113,6 +118,26 @@ export default {
                 icon: "mdi-account-circle",
                 title: "Samples Users",
                 to: "/superadmin/users",
+            },
+            {
+                icon: "mdi-folder",
+                title: "Contract Categories",
+                to: "/superadmin/categories",
+            },
+            {
+                icon: "mdi-folder",
+                title: "Placeholders",
+                to: "/superadmin/placeholders",
+            },
+            {
+                icon: "mdi-file-document",
+                title: "Gabarits",
+                to: "/superadmin/gabarits",
+            },
+            {
+                icon: "mdi-file-document",
+                title: "Contract Models",
+                to: "/superadmin/models",
             },
         ],
     }),

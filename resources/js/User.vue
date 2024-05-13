@@ -93,11 +93,6 @@ export default {
                     title: "Contracts",
                     to: "/user/contracts",
                 },
-                {
-                    icon: "mdi-file-outline",
-                    title: "Chat",
-                    to: "/chat",
-                },
             ],
             account: {
                 avatar: "",

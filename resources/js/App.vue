@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <!-- <div>
         <template v-if="hasRole('Superadmin')">
             <Superadmin />
         </template>
@@ -9,7 +9,7 @@
         <template v-else-if="hasRole('Simple User')">
             <User />
         </template>
-    </div>
+    </div> -->
     <div>
         <router-view></router-view>
     </div>

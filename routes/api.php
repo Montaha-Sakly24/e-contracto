@@ -14,8 +14,10 @@ use App\Http\Controllers\PlaceholderController;
 use App\Http\Controllers\GabaritController;
 use App\Http\Controllers\ContractModelController;
 use App\Http\Controllers\ContractController;
+use App\Http\Controllers\SuperadminDashboardController;
+use App\Http\Controllers\AdminDashboardController;
 
-use App\Http\Controllers\ChatController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -68,7 +70,12 @@ Route::prefix('categories')->group(function () {
     Route::delete('/{category}', [ContractCategoryController::class, 'deleteCategory']);
 });
 
-Route::get('/placeholders', [PlaceholderController::class, 'getPlaceholders']);
+Route::prefix('placeholders')->group(function () {
+    Route::post('/', [PlaceholderController::class, 'createPlaceholder']);
+    Route::get('/', [PlaceholderController::class, 'getPlaceholders']);
+    Route::put('/{placeholder}', [PlaceholderController::class, 'updatePlaceholder']);
+    Route::delete('/{placeholder}', [PlaceholderController::class, 'deletePlaceholder']);
+});
 
 Route::prefix('gabarits')->group(function () {
     Route::post('/', [GabaritController::class, 'createGabarit']);
@@ -78,8 +85,9 @@ Route::prefix('gabarits')->group(function () {
     Route::delete('/{gabarit}', [GabaritController::class, 'deleteGabarit']);
 });
 
+Route::middleware('auth:sanctum')->post('/models', [ContractModelController::class, 'createModel']);
+
 Route::prefix('models')->group(function () {
-    Route::post('/', [ContractModelController::class, 'createModel']);
     Route::get('/', [ContractModelController::class, 'getAllModels']);
     Route::get('/{model}', [ContractModelController::class, 'getModel']);
     Route::get('/{modelId}/details', [ContractModelController::class, 'getModelDetails']);
@@ -88,9 +96,11 @@ Route::prefix('models')->group(function () {
     Route::post('/filter', [ContractModelController::class, 'filterModels']);
 });
 
-Route::prefix('contracts')->group(function () {
+Route::prefix('contracts')->middleware('auth:sanctum')->group(function () {
     Route::post('/', [ContractController::class, 'generateContract']);
-    Route::get('/', [ContractController::class, 'getContracts']);
+    Route::get('/user', [ContractController::class, 'getContracts']);}
+);
+Route::prefix('contracts')->group(function () {
     Route::get('/{contract}', [ContractController::class, 'getContract']);
     Route::put('/{contract}', [ContractController::class, 'updateContract']);
     Route::delete('/{contract}', [ContractController::class, 'deleteContract']);
@@ -100,6 +110,23 @@ Route::prefix('contracts')->group(function () {
 
 });
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/messages', [ChatController::class, 'sendMessage']);
+
+Route::prefix('superadmin')->group(function () {
+    Route::get('admins/count', [SuperadminDashboardController::class, 'getAdminsCount']);
+    Route::get('users/count', [SuperadminDashboardController::class, 'getSamplesUsersCount']);
+    Route::get('models/count', [SuperadminDashboardController::class, 'getModelsCountByAdmin']);
+    Route::get('contracts/count', [SuperadminDashboardController::class, 'getContractsCountBySampleUser']);
+    Route::get('contracts/signed-percentage', [SuperadminDashboardController::class, 'getSignedContractsPercentage']);
+    Route::get('contracts/count-last-four-weeks', [SuperadminDashboardController::class, 'getContractsCountLastFourWeeks']);
+    Route::get('users/new-sample-users-by-month', [SuperadminDashboardController::class, 'getNewSampleUsersByMonth']);
 });
+
+
+Route::prefix('admin')->group(function () {
+    Route::get('categories/count', [AdminDashboardController::class, 'getCategoriesCount']);
+    Route::get('categories/{id}/models/count', [AdminDashboardController::class, 'getModelsCountByCategory']);
+    Route::get('gabarits/usage-count', [AdminDashboardController::class, 'getGabaritUsageCount']);
+    Route::get('contract-models/top', [AdminDashboardController::class, 'getTopContractModels']);
+});
+
+

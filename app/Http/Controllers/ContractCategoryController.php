@@ -7,17 +7,6 @@ use Illuminate\Http\Request;
 
 class ContractCategoryController extends Controller
 {
-   /* public function __construct()
-    {
-       $this->middleware('auth');
-       $this->middleware('permission:create-contract-category|edit-contract-category|delete-contract-category', ['only' => ['showlisteCategories','showCategory']]);
-       $this->middleware('permission:create-contract-category', ['only' => ['createCategory']]);
-       $this->middleware('permission:edit-contract-category', ['only' => ['updateCategory']]);
-       $this->middleware('permission:delete-contract-category', ['only' => ['deleteCategory']]);
-    }
-*/
-
-
     //Céer une nouvelle catégorie de contrat
     public function createCategory(Request $request)
     {

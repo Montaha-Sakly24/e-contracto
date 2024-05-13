@@ -231,13 +231,23 @@ export default {
                 gabarits: this.droppedItems.map((item) => item.id),
             };
             try {
-                const response = await axios.post("/api/models", newModelData);
+                const response = await axios.post("/api/models", newModelData, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem(
+                            "token"
+                        )}`,
+                    },
+                });
                 console.log("Model created:", response.data);
                 toast.fire({
                     icon: "success",
                     title: " Model created successfully",
                 });
-                this.router.push({ name: "Contract Models" });
+                if (localStorage.getItem("role") == "Superadmin") {
+                    this.router.push({ name: "SuperadminContractModels" });
+                } else {
+                    this.router.push({ name: "AdminContractModels" });
+                }
             } catch (error) {
                 console.error("Error creating model:", error);
                 toast.fire({
@@ -247,7 +257,11 @@ export default {
             }
         },
         resetModel() {
-            this.router.push({ name: "Contract Models" });
+            if (localStorage.getItem("role") == "Superadmin") {
+                this.router.push({ name: "SuperadminContractModel" });
+            } else {
+                this.router.push({ name: "AdminContractModel" });
+            }
         },
     },
 };

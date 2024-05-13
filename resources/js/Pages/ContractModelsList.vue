@@ -165,7 +165,11 @@ export default {
         },
 
         showCreateInterface() {
-            this.router.push({ name: "Create Contract Model" });
+            if (localStorage.getItem("role") == "Superadmin") {
+                this.router.push({ name: "SuperadminCreateContractModel" });
+            } else {
+                this.router.push({ name: "AdminCreateContractModel" });
+            }
         },
 
         async viewModel(model) {

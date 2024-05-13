@@ -82,7 +82,7 @@
                                                 <v-btn
                                                     variant="flat"
                                                     @click="viewModel(model)"
-                                                    >See more info</v-btn
+                                                    >View Model</v-btn
                                                 >
                                             </div>
                                         </v-overlay>
@@ -239,7 +239,7 @@ export default {
                 return;
             }
             this.router.push({
-                name: "generateContract",
+                name: "GenerateContract",
                 params: { modelId: this.model.id.toString() },
             });
         },

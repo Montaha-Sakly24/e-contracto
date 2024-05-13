@@ -61,6 +61,7 @@
                                 api-key="u3wugla2xzhrdg6u3ikszuh08rf6kydmvb1dlnl5dn3npntm"
                                 :init="computedDataTinymce"
                                 v-model="gabarit.content"
+                                :id="'myEditor'"
                             />
                         </v-col>
                     </v-row>
@@ -146,7 +147,21 @@ export default {
             }
         },
         appendContent(placeholder) {
-            this.gabarit.content += ` ${placeholder.identification}`;
+            const editor = tinymce.get("myEditor");
+            if (editor) {
+                const selection = editor.selection;
+                const content = selection.getContent();
+                const node = editor.selection.getNode();
+                const isTextNode = node && node.nodeType === 3;
+
+                if (isTextNode) {
+                    selection.setContent(
+                        content + ` ${placeholder.identification}`
+                    );
+                } else {
+                    selection.setContent(`${placeholder.identification} `);
+                }
+            }
         },
         extractCodesFromString(text) {
             const regex = /\[(.*?)\]/g;

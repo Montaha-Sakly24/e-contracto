@@ -57,4 +57,14 @@ class User extends Authenticatable
         $url = 'http://localhost:8000/resetpassword?token='.$token;
         $this->notify(new MailResetPasswordNotification($url));
     }
+
+    public function contracts()
+    {
+        return $this->hasMany(Contract::class,'user_id');
+    }
+
+    public function contractModels()
+    {
+        return $this->hasMany(ContractModel::class,'user_id');
+    }
 }

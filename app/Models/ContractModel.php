@@ -9,7 +9,7 @@ class ContractModel extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title','description', 'content','category_id','model_id'];
+    protected $fillable = ['title','description', 'content','category_id','model_id','user_id'];
 
     public function category()
     {
@@ -24,4 +24,10 @@ class ContractModel extends Model
     {
         return $this->hasMany(Contract::class,'model_id');
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class,'user_id');
+    }
+
 }

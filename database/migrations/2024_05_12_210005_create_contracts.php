@@ -11,10 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('contracts', function (Blueprint $table) {
+        Schema::create('contracts', function (Blueprint $table) {
+            $table->id();
+            $table->string('title');
             $table->text('content');
             $table->string('status')->default('unsigned');
             $table->text('signature')->nullable();
+            $table->foreignId('model_id')->nullable()->constrained('contract_models')->onDelete('set null');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->timestamps();
         });
     }
 
@@ -23,10 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('contracts', function (Blueprint $table) {
-            $table->dropColumn('content');
-            $table->dropColumn('status');
-            $table->dropColumn('signature');
-        });
+        Schema::dropIfExists('contracts');
     }
 };

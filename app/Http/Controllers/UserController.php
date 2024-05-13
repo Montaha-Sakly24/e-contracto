@@ -14,10 +14,6 @@ class UserController extends Controller
     //Céer un compte pour l'administrateur
     public function createAdminAccount(Request $request)
     {
-        /*$superadmin = Auth::user(); // Assuming you have authentication
-        if ($superadmin->role->name !== 'Superadmin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }*/
         $request->validate([
             'name' => 'required|string|max:25',
             'email' => 'required|string|email|max:255|unique:users',
@@ -76,13 +72,15 @@ class UserController extends Controller
     public function getAdminsList()
     {
         $admins = User::role('Admin')->get();
-        return response()->json($admins,200);}
+        return response()->json($admins,200);
+    }
 
 
     //Consulter liste utilisateurs
     public function getUsersList(){
         $users = User::role('Simple User')->get();
-        return response()->json($users,200);}
+        return response()->json($users,200);
+    }
 
     //Consulter profil utilisateur (admin || user )
     public function getUser(User $user)

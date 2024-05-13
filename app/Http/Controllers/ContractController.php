@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Contract;
 use App\Models\ContractModel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use PhpOffice\PhpWord\Shared\Html;
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\IOFactory;
 use PhpOffice\PhpWord\SimpleType\Jc;
-use Symfony\Component\HttpFoundation\Response;
+use Barryvdh\DomPDF\Facade as PDF; //////////////
+
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ContractMailable;
 
@@ -23,12 +25,18 @@ class ContractController extends Controller
             'content' =>'required',
             'model_id' => 'required|exists:contract_models,id'
         ]);
+
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['error' => 'User not authenticated'], 401);
+        }
         try{
             $contract = Contract::create([
                 'title' => $validatedData['title'],
                 'content' => $validatedData['content'],
                 'model_id' => $validatedData['model_id'],
-                'status' => 'unsigned'
+                'status' => 'unsigned',
+                'user_id' => $user->id,
             ]);
 
             $model = ContractModel::findOrFail($validatedData['model_id']);
@@ -43,8 +51,9 @@ class ContractController extends Controller
 //lzm tbadaleha myfetchi kn liste el contrat ela generahum huwa
     public function getContracts()
     {
-        $models = Contract::all();
-        return response()->json($models,200);
+        $user = Auth::user();
+        $contracts = $user->contracts;
+        return response()->json($contracts, 200);
     }
 
     public function getContract(Contract $contract)
@@ -68,16 +77,6 @@ class ContractController extends Controller
         return response()->json($response, 200);
     }
 
-    public function updateContract (Request $request,Contract $contract)
-    {
-        $validated = $request->validate([
-            'title' => 'max:255',
-
-        ]);
-        $contract->update($validated);
-        return response()->json($contract,200);
-    }
-
     public function deleteContract(Contract $contract)
     {
         try {
@@ -88,48 +87,79 @@ class ContractController extends Controller
         }
     }
 
+    private function getSignaturePath($signatureBase64)
+    {
+        // Example: Data comes in as base64, needs to be converted to an image file.
+        $imageData = explode(';base64,', $signatureBase64);
+        if (count($imageData) == 2) {
+            $data = base64_decode($imageData[1]);
+            $filePath = tempnam(sys_get_temp_dir(), 'signature_') . '.png';
+            file_put_contents($filePath, $data);
+            return $filePath;
+        }
+        throw new \Exception("Invalid signature format");
+    }
+
     public function exportContract(Contract $contract) {
         try {
             $phpWord = new PhpWord();
             $section = $phpWord->addSection();
-            $section->addText(
-                $contract->title,
-                array('name' => 'Arial', 'size' => 14, 'bold' => true)
-            );
-
-            $section->addTextBreak(1);
             Html::addHtml($section, $contract->content, false, false);
 
             if (!empty($contract->signature)) {
                 $section->addTextBreak();
 
-                $section->addText('Signature:', ['name' => 'Arial', 'size' => 12, 'bold' => true]);
-                $signaturePath = $this->getSignaturePath($contract->signature);
-                $section->addImage($signaturePath, [
-                    'width' => 200,
-                    'height' => 100,
-                    'alignment'     => Jc::CENTER,
-                    'wrappingStyle' => 'behind'
-                ]);
+                $rightAlignedStyle = [
+                    'alignment' => Jc::END,
+                    'indentation' => ['right' => 1000]
+                ];
+
+                $section->addText(
+                    'Signature:',
+                    [
+                        'name' => 'Arial',
+                        'size' => 12,
+                        'bold' => true
+                    ],
+                    $rightAlignedStyle
+                );
+
+                try {
+                    $signaturePath = $this->getSignaturePath($contract->signature);
+                    $section->addImage($signaturePath, [
+                        'width'         => 140,
+                        'height'        => 100,
+                        'alignment'     => Jc::END,
+                        'wrappingStyle' => 'behind'
+                    ]);
+                } catch (\Exception $e) {
+                    error_log('Error processing signature: ' . $e->getMessage());
+                }
             }
 
             $writer = IOFactory::createWriter($phpWord, 'Word2007');
             $fileName = 'Contract_' . $contract->title . '.docx';
-
             $temp_file = tempnam(sys_get_temp_dir(), $fileName);
             $writer->save($temp_file);
-
             return response()->download($temp_file, $fileName, ['Content-Type' => 'application/msword'])->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to export contract. Please try again later.'], 500);
         }
     }
 
+    // public function exportContractPDF(Contract $contract)
+    // {
+    //     try {
+    //         $pdf = PDF::loadView('contracts.pdf', ['contract' => $contract]);
+    //         return $pdf->download('Contract_' . $contract->title . '.pdf');
+    //     } catch (\Exception $e) {
+    //         return response()->json(['error' => 'Failed to export contract as PDF. Please try again later.', 'details' => $e->getMessage()], 500);
+    //     }
+    // }
+
+
     public function signContract(Request $request, Contract $contract)
     {
-        // Vérifiez l'authentification de l'utilisateur
-
-        // Récupérez les données de la signature
         $signatureData = $request->input('signature_data');
 
         $contract->signature = $signatureData;

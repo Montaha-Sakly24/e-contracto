@@ -125,6 +125,7 @@ export default {
             try {
                 const response = await axios.post("/api/login", form);
                 if (response.data.success) {
+                    console.log("1");
                     //
                     const userId = response.data.data.userId;
                     console.log("User ID before storing:", userId);
@@ -132,10 +133,11 @@ export default {
                     //
                     store.dispatch("setToken", response.data.data.token);
                     const role = response.data.data.role;
+                    localStorage.setItem("role", role[0]);
                     if (role.includes("Superadmin")) {
-                        router.push({ name: "Dashboard" });
+                        router.push({ name: "SuperadminDashboard" });
                     } else if (role.includes("Admin")) {
-                        router.push({ name: "Dashboard Admin" });
+                        router.push({ name: "AdminDashboard" });
                     } else if (role.includes("Simple User")) {
                         router.push({ name: "Home" });
                     }
@@ -149,6 +151,8 @@ export default {
                         timer: 1400,
                     });
                 } else {
+                    console.log("2");
+
                     if (response.status === 403) {
                         error.value =
                             "Your account is deactivated. Please contact the administrator!";
@@ -160,6 +164,8 @@ export default {
                             timer: 2000,
                         });
                     } else {
+                        console.log("3");
+
                         swal.fire({
                             icon: "error",
                             title: "Oops...",

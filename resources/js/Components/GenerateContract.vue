@@ -13,6 +13,7 @@
                                 <v-text-field
                                     :label="`Enter value for ${field.name}`"
                                     v-model="formFields[field.name]"
+                                    :rules="[rules.required]"
                                     required
                                     variant="outlined"
                                 ></v-text-field>
@@ -36,7 +37,7 @@
                             @click="nextPage"
                             >Next</v-btn
                         >
-                        <v-btn v-else color="blue" @click="saveContract"
+                        <v-btn v-else color="blue" @click="finalizeSaveContract"
                             >Save Contract</v-btn
                         >
                     </div>
@@ -44,9 +45,6 @@
             </v-col>
             <v-col cols="12" md="8">
                 <v-card class="a4-size" outlined v-if="model">
-                    <v-card-title class="text-center">
-                        {{ model.title }}
-                    </v-card-title>
                     <v-card-text>
                         <div v-html="previewContent"></div
                     ></v-card-text>
@@ -54,6 +52,30 @@
                 <v-alert v-if="error" type="error">{{ error }}</v-alert>
             </v-col>
         </v-row>
+        <v-dialog v-model="dialog" persistent max-width="500px">
+            <v-card>
+                <v-card-title>Enter a title for the contract</v-card-title>
+                <v-card-text>
+                    <v-text-field
+                        v-model="contractTitle"
+                        label="Contract Title"
+                        :rules="[rules.required]"
+                        variant="outlined"
+                        dense
+                        ref="titleField"
+                    ></v-text-field>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="grey darken-1" text @click="dialog = false"
+                        >Cancel</v-btn
+                    >
+                    <v-btn color="blue darken-1" text @click="saveContract"
+                        >Save</v-btn
+                    >
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
     </v-container>
 </template>
 
@@ -71,6 +93,11 @@ export default {
             currentPage: 1,
             fieldsPerPage: 5,
             totalFields: 0,
+            rules: {
+                required: (value) => !!value || "This field is required.",
+            },
+            dialog: false,
+            contractTitle: "",
         };
     },
     props: {
@@ -144,27 +171,49 @@ export default {
                 this.currentPage--;
             }
         },
-        async saveContract() {
+        finalizeSaveContract() {
+            const isValid = this.$refs.form.validate();
             if (!this.valid) {
                 console.log("Please complete all required fields.");
                 return;
             }
+            this.dialog = true;
+        },
+        async saveContract() {
+            if (!this.$refs.titleField.validate()) {
+                console.log("Please enter a title for the contract.");
+                return;
+            }
+            if (!this.contractTitle) {
+                console.log("Please enter a title for the contract.");
+                return;
+            }
             try {
                 const contractData = {
-                    title: this.model.title,
+                    title: this.contractTitle,
                     content: this.previewContent,
                     model_id: this.modelId,
                 };
                 const response = await axios.post(
                     "/api/contracts/",
-                    contractData
+                    contractData,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem(
+                                "token"
+                            )}`,
+                        },
+                    }
                 );
                 console.log("Contract saved:", response.data);
                 this.router.push({ name: "Contracts" });
+                this.dialog = false;
+                this.contractTitle = "";
             } catch (error) {
                 console.error("Error saving contract:", error.response.data);
                 this.error =
                     "Failed to save contract: " + error.response.data.message;
+                this.dialog = false;
             }
         },
         cancelGenerate() {
