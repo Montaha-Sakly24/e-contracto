@@ -25,23 +25,12 @@
                                 <v-btn
                                     color="blue"
                                     variant="outlined"
-                                    @click="viewContract(item)"
+                                    @click.prevent.stop="viewContract(item)"
                                     ><font-awesome-icon
                                         class="pr-2"
                                         :icon="['fas', 'eye']"
                                     />
-                                    View
-                                </v-btn>
-
-                                <v-btn
-                                    color="red"
-                                    variant="outlined"
-                                    @click="deleteContract(item)"
-                                    ><font-awesome-icon
-                                        class="pr-2"
-                                        :icon="['fas', 'trash']"
-                                    />
-                                    Delete
+                                    PDF
                                 </v-btn>
 
                                 <v-btn
@@ -50,6 +39,27 @@
                                     :disabled="item.status === 'signed'"
                                 >
                                     Sign
+                                </v-btn>
+                                <v-btn
+                                    color="darkblueshade"
+                                    @click="exportContract(item)"
+                                    class="export-btn"
+                                >
+                                    <v-icon>mdi-download</v-icon> Docx
+                                </v-btn>
+                                <v-btn
+                                    color="red"
+                                    variant="outlined"
+                                    @click="deleteContract(item)"
+                                    ><font-awesome-icon
+                                        :icon="['fas', 'trash']"
+                                    />
+                                </v-btn>
+                                <v-btn
+                                    color="muted"
+                                    @click="sendContract(item)"
+                                >
+                                    Send
                                 </v-btn>
                             </div>
                         </td>
@@ -64,38 +74,20 @@
             :scrollable="false"
             :hide-overlay="true"
             no-click-animation
-            width="800"
-            content-class="custom-vuetify-dialog-add"
+            max-width="lg"
         >
             <v-btn
                 icon
                 @click="viewDialog = false"
                 title="Close"
                 color="muted"
-                class="dialog-close-btn"
+                class="view-dialog-close-btn"
             >
-                <font-awesome-icon :icon="['fas', 'xmark']" />
+                <font-awesome-icon :icon="['fas', 'times']" />
             </v-btn>
-            <v-btn
-                color="darkblueshade"
-                @click="exportContract(contract)"
-                class="export-btn"
-            >
-                <v-icon>mdi-download</v-icon> Export
-            </v-btn>
-
-            <v-card class="dialog-card">
-                <v-card-text>
-                    <div v-html="contract.content"></div>
-
-                    <img
-                        v-if="contract.signature"
-                        :src="contract.signature"
-                        alt="Signature"
-                        class="signature-image"
-                    />
-                </v-card-text>
-            </v-card>
+            <div class="iframe-container">
+                <iframe :src="contract" class="view-contract-iframe" />
+            </div>
         </v-dialog>
 
         <v-dialog
@@ -128,6 +120,32 @@
                 </div>
             </v-card>
         </v-dialog>
+        <v-dialog v-model="showSendDialog" persistent max-width="400">
+            <v-card>
+                <v-card-title>Send Contract</v-card-title>
+                <v-card-text>
+                    <v-text-field
+                        v-model="recipientEmail"
+                        label="Recipient Email"
+                    ></v-text-field>
+                    <v-text-field
+                        v-model="subject"
+                        label="Subject"
+                    ></v-text-field>
+                    <v-textarea v-model="body" label="Body"></v-textarea>
+                </v-card-text>
+                <v-card-actions>
+                    <v-btn
+                        color="blue darken-1"
+                        text
+                        @click="sendContractWithEmail"
+                    >
+                        Send
+                    </v-btn>
+                    <v-btn text @click="showSendDialog = false">Cancel</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
     </v-container>
 </template>
 
@@ -147,6 +165,10 @@ export default {
             contracts: [],
             viewDialog: false,
             showSignDialog: false,
+            showSendDialog: false,
+            recipientEmail: "",
+            subject: "",
+            body: "",
             headers: [
                 {
                     title: "#",
@@ -186,15 +208,25 @@ export default {
         async viewContract(contract) {
             try {
                 const response = await axios.get(
-                    "/api/contracts/" + contract.id
+                    "/api/contracts/" + contract.id,
+                    {
+                        responseType: "blob",
+                        headers: {
+                            Accept: "application/pdf",
+                        },
+                    }
                 );
-                this.contract = response.data;
+                const blob = new Blob([response.data], {
+                    type: "application/pdf",
+                });
+                const blobUrl = URL.createObjectURL(blob);
+                this.contract = blobUrl;
                 this.viewDialog = true;
             } catch (error) {
                 console.error("Error viewing contract:", error);
                 toast.fire({
                     icon: "error",
-                    title: "Error viewing contract ",
+                    title: "Error viewing contract",
                 });
             }
         },
@@ -272,6 +304,47 @@ export default {
                 console.error("Error signing contract:", error);
             }
         },
+        async sendContract(contract) {
+            try {
+                this.showSendDialog = true;
+                this.contract = contract;
+            } catch (error) {
+                console.error("Error sending contract:", error);
+                toast.fire({
+                    icon: "error",
+                    title: "Error sending contract",
+                });
+            }
+        },
+        sendContractWithEmail() {
+            axios
+                .post("/api/contracts/send-contract", {
+                    contract_id: this.contract.id,
+                    recipient_email: this.recipientEmail,
+                    subject: this.subject,
+                    body: this.body,
+                })
+                .then((response) => {
+                    console.log(response.data.message);
+                    toast.fire({
+                        icon: "success",
+                        title: "Contract sent successfully",
+                    });
+                })
+                .catch((error) => {
+                    console.error("Error sending contract:", error);
+                    toast.fire({
+                        icon: "error",
+                        title: "Error sending contract",
+                    });
+                })
+                .finally(() => {
+                    this.showSendDialog = false;
+                    this.recipientEmail = "";
+                    this.subject = "";
+                    this.body = "";
+                });
+        },
     },
 };
 </script>
@@ -281,6 +354,7 @@ export default {
     background-color: #f2f2f2;
     display: flex;
     flex-direction: column;
+
     min-height: 100vh;
     padding: 20px;
 }
@@ -304,8 +378,7 @@ b {
     position: relative;
 }
 
-.dialog-close-btn,
-.export-btn {
+.dialog-close-btn {
     position: absolute;
     top: 10px;
     z-index: 10;
@@ -316,10 +389,6 @@ b {
     border-radius: 8px;
     height: 37px !important;
     width: 40px !important;
-}
-
-.export-btn {
-    right: 60px;
 }
 
 .dialog-card {
@@ -333,5 +402,29 @@ b {
 .signature-image {
     max-width: 200px;
     height: auto;
+}
+
+.iframe-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.view-contract-iframe {
+    width: 100%;
+    max-width: 900px;
+    height: 90vh;
+}
+.view-dialog-close-btn {
+    position: absolute;
+    top: 0px;
+    right: 70px;
+    z-index: 10;
+    border-radius: 8px;
+    height: 37px !important;
+    width: 40px !important;
 }
 </style>

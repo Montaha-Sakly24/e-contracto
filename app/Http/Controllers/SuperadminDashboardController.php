@@ -15,14 +15,22 @@ class SuperadminDashboardController extends Controller
 {
     public function getAdminsCount()
     {
-        $totalAdmins = User::role('Admin')->count();
-        return response()->json(['total_admins' => $totalAdmins], 200);
+        try {
+            $totalAdmins = User::role('Admin')->count();
+            return response()->json($totalAdmins, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     public function getSamplesUsersCount()
     {
-        $totalUsers = User::role('Simple User')->count();
-        return response()->json(['total_users' => $totalUsers], 200);
+        try {
+            $totalUsers = User::role('Simple User')->count();
+            return response()->json($totalUsers, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     public function getModelsCountByAdmin()
@@ -69,7 +77,7 @@ class SuperadminDashboardController extends Controller
         $totalContracts = Contract::count();
         $signedContracts = Contract::where('status', 'signed')->count();
 
-        // Calculate the percentage
+
         $signedPercentage = $totalContracts > 0 ? ($signedContracts / $totalContracts) * 100 : 0;
 
         return response()->json(['signed_percentage' => $signedPercentage], 200);
@@ -77,18 +85,15 @@ class SuperadminDashboardController extends Controller
 
     public function getContractsCountLastFourWeeks()
     {
-        // Initialize an array to store the contracts count for each week
+
         $contractsCountLastFourWeeks = [];
 
-        // Calculate the start and end date of each week in the last month
         for ($i = 1; $i <= 4; $i++) {
             $startDate = Carbon::now()->subMonth()->startOfMonth()->addWeeks($i - 1);
-            $endDate = Carbon::now()->subMonth()->startOfMonth()->addWeeks($i)->subDay(); // End of the week is one day before the start of the next week
+            $endDate = Carbon::now()->subMonth()->startOfMonth()->addWeeks($i)->subDay();
 
-            // Query contracts created between the start and end date of the current week
             $contractsCount = Contract::whereBetween('created_at', [$startDate, $endDate])->count();
 
-            // Store the contracts count for the current week
             $contractsCountLastFourWeeks[] = [
                 'week' => $i,
                 'start_date' => $startDate->toDateString(),

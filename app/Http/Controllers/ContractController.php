@@ -10,7 +10,7 @@ use PhpOffice\PhpWord\Shared\Html;
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\IOFactory;
 use PhpOffice\PhpWord\SimpleType\Jc;
-use Barryvdh\DomPDF\Facade as PDF; //////////////
+use PDF;
 
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ContractMailable;
@@ -58,23 +58,34 @@ class ContractController extends Controller
 
     public function getContract(Contract $contract)
     {
-        // Initialize the response with the basic contract details
-        $response = [
-            'id' => $contract->id,
-            'title' => $contract->title,
-            'content' => $contract->content,
-            'model_id' => $contract->model_id,
-            'status' => $contract->status,
-            'created_at' => $contract->created_at->toDateTimeString(),
-            'updated_at' => $contract->updated_at->toDateTimeString()
-        ];
+        try {
 
-        // Add the signature to the response if it exists
-        if (!empty($contract->signature)) {
-            $response['signature'] = $contract->signature;
+            $content = $contract->content;
+
+        // Generate the PDF stream
+        $pdf = PDF::loadHTML($content);
+
+         if (!empty($contract->signature)) {
+
+            $dompdf = $pdf->getDomPDF();
+
+            $pageWidth = $dompdf->getCanvas()->get_width();
+            $pageHeight = $dompdf->getCanvas()->get_height();
+
+            $signatureWidth = 180;
+            $signatureHeight = 80;
+            $signatureX = $pageWidth - $signatureWidth - 10;
+            $signatureY = $pageHeight - $signatureHeight - 40;
+
+            // Add the signature to the PDF
+            $dompdf->getCanvas()->image($contract->signature, $signatureX, $signatureY, $signatureWidth, $signatureHeight);
         }
 
-        return response()->json($response, 200);
+        return $pdf->stream();
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     public function deleteContract(Contract $contract)
@@ -143,20 +154,9 @@ class ContractController extends Controller
             $writer->save($temp_file);
             return response()->download($temp_file, $fileName, ['Content-Type' => 'application/msword'])->deleteFileAfterSend(true);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to export contract. Please try again later.'], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-
-    // public function exportContractPDF(Contract $contract)
-    // {
-    //     try {
-    //         $pdf = PDF::loadView('contracts.pdf', ['contract' => $contract]);
-    //         return $pdf->download('Contract_' . $contract->title . '.pdf');
-    //     } catch (\Exception $e) {
-    //         return response()->json(['error' => 'Failed to export contract as PDF. Please try again later.', 'details' => $e->getMessage()], 500);
-    //     }
-    // }
-
 
     public function signContract(Request $request, Contract $contract)
     {
@@ -170,25 +170,52 @@ class ContractController extends Controller
         return response()->json(['message' => 'Contract signed successfully']);
     }
 
+
     public function sendContract(Request $request)
     {
-        $request->validate([
-            'recipientEmail' => 'required|email',
-            'contract_id' => 'required|exists:contracts,id',
-        ]);
-
         try {
+            $request->validate([
+                'recipient_email' => 'required|email',
+                'subject' => 'required|string',
+                'body' => 'required|string',
+                'contract_id' => 'required|exists:contracts,id',
+            ]);
 
-            $contract = Contract::findOrFail($request->input('contract_id'));
+            $contractId = $request->input('contract_id');
+            $contract = Contract::findOrFail($contractId);
 
+            $pdf = PDF::loadHTML($contract->content);
 
-            Mail::to($request->recipientEmail)->send(new ContractMailable($contract));
+            if (!empty($contract->signature)) {
+                $dompdf = $pdf->getDomPDF();
+                $pageWidth = $dompdf->getCanvas()->get_width();
+                $pageHeight = $dompdf->getCanvas()->get_height();
 
-            return response()->json(['message' => 'Contract sent successfully.']);
+                $signatureWidth = 180;
+                $signatureHeight = 80;
+                $signatureX = $pageWidth - $signatureWidth - 10;
+                $signatureY = $pageHeight - $signatureHeight - 40;
+
+                $dompdf->getCanvas()->image($contract->signature, $signatureX, $signatureY, $signatureWidth, $signatureHeight);
+            }
+
+            $pdfContent = $pdf->output();
+
+            $recipientEmail = $request->input('recipient_email');
+            $subject = $request->input('subject');
+            $body = $request->input('body');
+
+            Mail::raw($body, function ($message) use ($recipientEmail, $subject, $pdfContent) {
+                $message->to($recipientEmail)
+                ->from('sender.email@mail.com')
+                        ->subject($subject)
+                        ->attachData($pdfContent, 'contract.pdf');
+            });
+
+            return response()->json(['message' => 'Contract sent successfully'], 200);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to send contract. Please try again later.'], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-
 
 }

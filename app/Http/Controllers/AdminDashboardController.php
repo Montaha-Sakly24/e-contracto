@@ -12,7 +12,7 @@ class AdminDashboardController extends Controller
     public function getCategoriesCount()
     {
         $categoriesCount = ContractCategory::count();
-        return response()->json(['total_categories' => $categoriesCount], 200);
+        return response()->json($categoriesCount, 200);
     }
 
     public function getModelsCountByCategory($id)
