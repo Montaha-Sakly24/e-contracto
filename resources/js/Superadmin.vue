@@ -4,28 +4,16 @@
             href="https://cdn.jsdelivr.net/npm/@mdi/font@5.9.55/css/materialdesignicons.min.css"
             rel="stylesheet"
         />
-        <v-navigation-drawer
-            v-model="drawer"
-            app
-            image="https://cdn.vuetifyjs.com/images/backgrounds/bg-2.jpg"
-            theme="dark"
-            permanent
-        >
+        <v-navigation-drawer v-model="drawer" app theme="dark" permanent>
             <v-list dense nav>
                 <v-list-item>
-                    <v-list-item-avatar
-                        class="align-self-center"
-                        color="white"
-                        contain
-                    >
-                        <v-img
-                            src="https://demos.creative-tim.com/vuetify-material-dashboard/favicon.ico"
-                            max-height="60"
-                        />
+                    <v-list-item-avatar color="white" contain>
+                        <v-img :src="logoEcontracto" max-height="150" />
                     </v-list-item-avatar>
-
-                    <v-list-item-content>
-                        <v-list-item-title class="display-1" />
+                    <v-list-item-content class="text-center">
+                        <v-list-item-title class="ml-2" style="font-size: 18px">
+                            Superadmin Account
+                        </v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
             </v-list>
@@ -37,7 +25,9 @@
                     v-for="(item, index) in items"
                     :key="index"
                     :to="item.to"
-                    class="my-4"
+                    class="my-4 mt-n3"
+                    color="black"
+                    rounded="shaped"
                 >
                     <v-list-item-content class="d-flex align-center">
                         <v-list-item-icon>
@@ -66,10 +56,6 @@
                 <v-icon v-else> mdi-dots-vertical </v-icon>
             </v-btn>
 
-            <v-toolbar-title
-                class="hidden-sm-and-down font-weight-light"
-                v-text="$route.name"
-            />
             <v-spacer />
             <v-btn
                 class="ml-2"
@@ -87,8 +73,8 @@
     </v-app>
 </template>
 <script>
-import { useStore } from "vuex";
 import { useRouter } from "vue-router";
+import contract from "./Pages/contract.png";
 export default {
     props: {
         value: {
@@ -97,8 +83,6 @@ export default {
         },
     },
 
-    computed: {},
-
     methods: {
         logout() {
             localStorage.clear();
@@ -106,7 +90,10 @@ export default {
         },
     },
     data: () => ({
+        router: useRouter(),
         drawer: false,
+        logoEcontracto: contract,
+
         items: [
             {
                 icon: "mdi-view-dashboard",
@@ -116,7 +103,7 @@ export default {
             { icon: "mdi-account", title: "Admins", to: "/superadmin/admins" },
             {
                 icon: "mdi-account-circle",
-                title: "Samples Users",
+                title: "Contract Seekers",
                 to: "/superadmin/users",
             },
             {
@@ -125,12 +112,12 @@ export default {
                 to: "/superadmin/categories",
             },
             {
-                icon: "mdi-folder",
+                icon: "mdi-format-quote-open",
                 title: "Placeholders",
                 to: "/superadmin/placeholders",
             },
             {
-                icon: "mdi-file-document",
+                icon: "mdi-file-document-outline",
                 title: "Gabarits",
                 to: "/superadmin/gabarits",
             },
@@ -150,5 +137,8 @@ export default {
 }
 .content-shifted {
     margin-left: 250px;
+}
+.v-navigation-drawer {
+    background-image: linear-gradient(30deg, #3b6c76, #0c4d86);
 }
 </style>

@@ -38,10 +38,9 @@ Route::controller(AuthController::class)->group(function(){
     Route::post('login','login');
     Route::post('register','signUp');
 });
+
 Route::post('/forgotpassword', [ResetForgotPasswordController::class, 'forgotPassword']);
 Route::post('/resetpassword', [ResetForgotPasswordController::class, 'resetPassword']);
-
-Route::apiResource('permissions', 'PermissionController');
 
 Route::prefix('users')->group(function () {
     Route::post('/', [UserController::class, 'createAdminAccount']);
@@ -59,9 +58,6 @@ Route::prefix('profile')->middleware('auth:sanctum')->group(function () {
     Route::delete('/',[ProfileController::class, 'deleteProfile']);
 });
 
-
-
-//Route::apiResource('categories', 'ContractCategoryController');
 Route::prefix('categories')->group(function () {
     Route::post('/', [ContractCategoryController::class, 'createCategory']);
     Route::get('/', [ContractCategoryController::class, 'getListCategories']);
@@ -86,6 +82,7 @@ Route::prefix('gabarits')->group(function () {
 });
 
 Route::middleware('auth:sanctum')->post('/models', [ContractModelController::class, 'createModel']);
+
 
 Route::prefix('models')->group(function () {
     Route::get('/', [ContractModelController::class, 'getAllModels']);
@@ -124,9 +121,10 @@ Route::prefix('superadmin')->group(function () {
 
 Route::prefix('admin')->group(function () {
     Route::get('categories/count', [AdminDashboardController::class, 'getCategoriesCount']);
-    Route::get('categories/{id}/models/count', [AdminDashboardController::class, 'getModelsCountByCategory']);
+    Route::get('categories/models/count', [AdminDashboardController::class, 'getModelsCountByCategory']);
     Route::get('gabarits/usage-count', [AdminDashboardController::class, 'getGabaritUsageCount']);
     Route::get('contract-models/top', [AdminDashboardController::class, 'getTopContractModels']);
+    Route::get('contracts/count', [AdminDashboardController::class, 'getContractsCountBySampleUser']);
 });
 
 

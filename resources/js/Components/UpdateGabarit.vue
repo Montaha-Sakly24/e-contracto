@@ -78,15 +78,15 @@
             <v-divider class="line-hr-footer"></v-divider>
             <v-card-actions class="actions-msg-btn-modal">
                 <v-spacer></v-spacer>
+                <v-btn variant="outlined" @click="cancelUpdate"> Cancel </v-btn>
                 <v-btn
-                    color="blue"
+                    color="#1e0c8c"
                     type="submit"
                     variant="elevated"
                     @click="funUpdateGabarit"
                 >
                     Save Changes
                 </v-btn>
-                <v-btn variant="outlined" @click="cancelUpdate"> Cancel </v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>

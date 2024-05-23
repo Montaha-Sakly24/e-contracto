@@ -73,7 +73,7 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->only('email', 'password'), [
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
@@ -82,41 +82,37 @@ class AuthController extends Controller
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
-        // Tentative d'authentification avec les informations fournies
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-            $user = Auth::user();
-
-            if (!$user->status) {
-                Auth::logout();
-                return response()->json(['success' => false, 'message' => 'Your account is deactivated. Please contact the administrator!'], 403);
-            }
-
-            $role = $user->getRoleNames();
-
-            // Création du jeton d'accès
-            $token = $user->createToken('MyApp')->plainTextToken;
-
-
-            $response = [
-                'success' => true,
-                'data' => [
-                    'token' => $token,
-                    'name' => $user->name,
-                    'role'=>$role,
-                ],
-                'message' => 'User logged in successfully'
-            ];
-            return response()->json($response, 200);
-        } else {
-
-            $user = User::where('email', $request->email)->first();
-
-            if (!$user) {
-                return response()->json(['success' => false, 'message' => 'Invalid email address.'], 401);
-            }
-            return response()->json(['success' => false, 'message' => 'Invalid password.'], 401);
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
+            return response()->json(['success' => false, 'errors' => ['email' => ['Invalid email address.']]], 401);
         }
+
+        if (!Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            return response()->json(['success' => false, 'errors' => ['password' => ['Invalid password.']]], 401);
+        }
+
+        if (!$user->status) {
+            Auth::logout();
+            return response()->json(['success' => false, 'message' => 'Your account is deactivated. Please contact the administrator!'], 403);
+        }
+
+        $role = $user->getRoleNames();
+        $token = $user->createToken('MyApp')->plainTextToken;
+
+        $response = [
+            'success' => true,
+            'data' => [
+                'token' => $token,
+                'name' => $user->name,
+                'role' => $role,
+            ],
+            'message' => 'User logged in successfully'
+        ];
+
+        return response()->json($response, 200);
+
     }
+
 
 
 }

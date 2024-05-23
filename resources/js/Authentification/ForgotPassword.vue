@@ -82,6 +82,8 @@ export default {
         async forgotPassword() {
             try {
                 await axios.post("/api/forgotpassword", { email: this.email });
+                // Check if the response contains an error message related to superadministrator role
+
                 toast.fire({
                     icon: "info",
                     title: "Notification:",
@@ -89,6 +91,13 @@ export default {
                 });
             } catch (error) {
                 if (
+                    error.response &&
+                    error.response.data &&
+                    error.response.data.error ===
+                        "Superadministrators cannot reset their passwords."
+                ) {
+                    alert("Superadministrators cannot reset their passwords.");
+                } else if (
                     error.response &&
                     error.response.data &&
                     error.response.data.errors

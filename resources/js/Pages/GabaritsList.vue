@@ -69,7 +69,8 @@
                 <v-card-text class="body-card" v-if="getOneGabarit">
                     <p><strong>Title : </strong> {{ getOneGabarit.title }}</p>
                     <p><strong>Content : </strong></p>
-                    <div v-html="getOneGabarit.content"></div>
+
+                    <div class="pl-12" v-html="getOneGabarit.content"></div>
                 </v-card-text>
                 <v-divider class="line-hr-footer"></v-divider>
                 <v-card-actions class="actions-msg-btn-modal">

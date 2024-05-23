@@ -61,15 +61,20 @@
             </v-data-table>
         </v-card>
     </v-container>
-    <v-dialog v-model="createDialog" max-width="400px">
+    <v-dialog v-model="createDialog" max-width="500px">
         <v-card>
-            <v-card-title>Add New Category </v-card-title>
+            <v-card-title
+                class="title text-uppercase font-weight-bold font-italic title-modal"
+                >Add New Category
+            </v-card-title>
+            <v-divider class="line-hr"></v-divider>
             <v-card-text>
                 <v-text-field
                     v-model="newCategory.title"
                     label="Title"
                     variant="outlined"
                     required
+                    :error-messages="errors['title']"
                 ></v-text-field>
                 <v-textarea
                     v-model="newCategory.description"
@@ -78,13 +83,20 @@
                     required
                     auto-grow
                     rows="5"
+                    :error-messages="errors['description']"
                 ></v-textarea>
             </v-card-text>
-            <v-card-actions>
-                <v-btn color="info" variant="flat" @click="createCategory">
+            <v-divider class="line-hr-footer"></v-divider>
+            <v-card-actions class="actions-msg-btn-modal">
+                <v-spacer></v-spacer>
+                <v-btn variant="outlined" @click="cancelCreate">Cancel</v-btn>
+                <v-btn
+                    color="#1e0c8c"
+                    variant="elevated"
+                    @click="createCategory"
+                >
                     Create
                 </v-btn>
-                <v-btn color="error" @click="cancelCreate">Cancel</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
@@ -134,28 +146,42 @@
         </v-card>
     </v-dialog>
 
-    <v-dialog v-model="updateDialog" max-width="400px">
+    <v-dialog v-model="updateDialog" max-width="500px">
         <v-card>
-            <v-card-title>{{ category.title }}</v-card-title>
+            <v-card-title
+                class="title text-uppercase font-weight-bold font-italic title-modal"
+            >
+                Update " {{ category.title }} "
+            </v-card-title>
+            <v-divider class="line-hr"></v-divider>
+
             <v-card-text>
                 <p>Title</p>
                 <v-text-field
                     v-model="newCategory.title"
                     variant="outlined"
                     required
+                    :error-messages="errors['title']"
                 ></v-text-field>
                 <p>Description</p>
                 <v-textarea
                     v-model="newCategory.description"
                     variant="outlined"
                     required
+                    :error-messages="errors['description']"
                 ></v-textarea>
             </v-card-text>
-            <v-card-actions>
-                <v-btn color="info" variant="flat" @click="updateCategory">
+            <v-divider class="line-hr-footer"></v-divider>
+            <v-card-actions class="actions-msg-btn-modal">
+                <v-spacer></v-spacer>
+                <v-btn variant="outlined" @click="cancelUpdate">Cancel</v-btn>
+                <v-btn
+                    color="#1e0c8c"
+                    variant="elevated"
+                    @click="updateCategory"
+                >
                     Save changes
                 </v-btn>
-                <v-btn color="error" @click="cancelUpdate">Cancel</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
@@ -194,6 +220,7 @@ export default {
                     sortable: false,
                 },
             ],
+            errors: {},
         };
     },
     mounted() {
@@ -219,6 +246,7 @@ export default {
         showCreateDialog() {
             this.newCategory.title = "";
             this.newCategory.description = "";
+            this.errors = {};
             this.createDialog = true;
         },
 
@@ -234,20 +262,21 @@ export default {
                     icon: "success",
                     title: "Category created successfully ",
                 });
+
                 await this.fetchCategories();
             } catch (error) {
-                if (error.response && error.response.status === 400) {
-                    if (error.response.data && error.response.data.errors) {
-                        this.errors = error.response.data.errors;
-                    } else {
-                        console.error("Validation error:", error.response.data);
+                if (error.response && error.response.data.errors) {
+                    const errors = error.response.data.errors;
+                    this.errors = {};
+
+                    if (errors.title) {
+                        this.errors.title = errors.title[0];
+                    }
+                    if (errors.description) {
+                        this.errors.description = errors.description[0];
                     }
                 } else {
-                    console.error("Error creating category:", error);
-                    toast.fire({
-                        icon: "error",
-                        title: "Error creating category ",
-                    });
+                    console.error("An unexpected error occurred:", error);
                 }
             }
         },
@@ -279,10 +308,6 @@ export default {
                 this.models = response.data;
             } catch (error) {
                 console.error("Error fetching models by category:", error);
-                toast.fire({
-                    icon: "error",
-                    title: "Error fetching models by category",
-                });
             }
         },
 
@@ -290,6 +315,7 @@ export default {
             this.category = { ...category };
             this.newCategory.title = category.title;
             this.newCategory.description = category.description;
+            this.errors = {};
             this.updateDialog = true;
         },
         async updateCategory(category) {
@@ -309,11 +335,19 @@ export default {
                     title: "Category updated successfully ",
                 });
             } catch (error) {
-                console.error("Error updating category:", error);
-                toast.fire({
-                    icon: "error",
-                    title: "Error updating category ",
-                });
+                if (error.response && error.response.data.errors) {
+                    const errors = error.response.data.errors;
+                    this.errors = {};
+
+                    if (errors.title) {
+                        this.errors.title = errors.title[0];
+                    }
+                    if (errors.description) {
+                        this.errors.description = errors.description[0];
+                    }
+                } else {
+                    console.error("An unexpected error occurred:", error);
+                }
             }
         },
         cancelUpdate() {

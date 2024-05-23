@@ -93,12 +93,28 @@ class ContractModelController extends Controller
     public function updateModel (Request $request,ContractModel $model)
     {
         $validated = $request->validate([
-            'title' => 'max:50',
-            'description'=>'max:255',
-            'content' =>'max:10000',
-
+            'title' => 'required|max:50',
+            'description'=>'required|max:255',
+            'content' =>'required',
+            'gabarits' => 'required|array',
+            'gabarits.*' => 'exists:gabarits,id',
+            'category_id' => 'required|exists:contract_categories,id'
         ]);
-        $model->update($validated);
+// Récupérer les IDs des gabarits déjà associés à ce modèle
+$existingGabaritIds = $model->gabarits()->pluck('gabarits.id')->toArray();
+
+// Fusionner les IDs des gabarits existants avec les nouveaux IDs fournis dans la requête
+$gabaritIds = array_merge($existingGabaritIds, $validated['gabarits']);
+
+        $model->update([
+            'title' => $validated['title'],
+            'description' => $validated['description'],
+            'content' => $validated['content'],
+            'category_id' => $validated['category_id']
+        ]);
+
+        $model->gabarits()->sync($gabaritIds);
+
         return response()->json($model,200);
     }
 

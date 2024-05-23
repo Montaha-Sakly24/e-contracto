@@ -29,8 +29,8 @@
                                 v-model="gabarit.title"
                                 ref="title"
                                 persistent-placeholder
-                                :rules="ruleTitle"
                                 clearable
+                                :error-messages="errors['title']"
                             ></v-text-field>
                         </v-col>
                     </v-row>
@@ -49,7 +49,7 @@
                                     <div class="value-field">
                                         {{ placeholder.name }}
                                     </div>
-                                    <div class="icon-copy">
+                                    <div class="icon-copy pl-3">
                                         <font-awesome-icon
                                             :icon="['fas', 'copy']"
                                         /></div
@@ -63,6 +63,12 @@
                                 v-model="gabarit.content"
                                 :id="'myEditor'"
                             />
+                            <v-alert
+                                v-if="errors.content && errors.content.length"
+                                type="error"
+                            >
+                                {{ errors.content[0] }}
+                            </v-alert>
                         </v-col>
                     </v-row>
                 </v-form>
@@ -71,6 +77,7 @@
             <v-divider class="line-hr-footer"></v-divider>
             <v-card-actions class="actions-msg-btn-modal">
                 <v-spacer></v-spacer>
+                <v-btn variant="outlined" @click="cancelCreate"> Cancel </v-btn>
                 <v-btn
                     color="#1e0c8c"
                     variant="elevated"
@@ -79,7 +86,6 @@
                 >
                     Create
                 </v-btn>
-                <v-btn variant="outlined" @click="cancelCreate"> Cancel </v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
@@ -98,13 +104,10 @@ export default {
             createDialog: false,
             gabarit: {
                 title: "",
-                title: "",
+                content: "",
                 placeholders: [],
             },
-            errors: {
-                title: "",
-                title: "",
-            },
+            errors: {},
         };
     },
     computed: {
@@ -129,9 +132,9 @@ export default {
                     ),
             };
         },
-        ruleTitle() {
-            return [(v) => !!v || "Title is required."];
-        },
+        // ruleTitle() {
+        //     return [(v) => !!v || "Title is required."];
+        // },
     },
     mounted() {
         this.getAllPlaceholders();
@@ -169,22 +172,39 @@ export default {
             return matches;
         },
         async addNewGabarit() {
-            const valid = await this.$refs.formAddGabarit.validate();
-            if (valid.valid) {
-                const placeholders = this.extractCodesFromString(
-                    this.gabarit.content
-                );
-                placeholders.forEach((element) => {
-                    const item = this.getListPlaceholders.find(
-                        (item) => item.identification === `[${element}]`
+            try {
+                const valid = await this.$refs.formAddGabarit.validate();
+                if (valid.valid) {
+                    const placeholders = this.extractCodesFromString(
+                        this.gabarit.content
                     );
-                    if (item) {
-                        this.gabarit.placeholders.push(item.id);
+                    placeholders.forEach((element) => {
+                        const item = this.getListPlaceholders.find(
+                            (item) => item.identification === `[${element}]`
+                        );
+                        if (item) {
+                            this.gabarit.placeholders.push(item.id);
+                        }
+                    });
+                    const response = this.createGabarit(this.gabarit);
+                    if (response) {
+                        this.cancelCreate();
                     }
-                });
-                const response = this.createGabarit(this.gabarit);
-                if (response) {
-                    this.cancelCreate();
+                }
+            } catch (error) {
+                if (error.response && error.response.data.errors) {
+                    const errors = error.response.data.errors;
+                    this.errors = {};
+
+                    if (errors.title) {
+                        this.errors.title = errors.title[0];
+                    }
+                } else {
+                    console.error("An unexpected error occurred:", error);
+                    toast.fire({
+                        icon: "error",
+                        title: "An unexpected error occurred",
+                    });
                 }
             }
         },
@@ -194,6 +214,7 @@ export default {
                 content: "",
                 placeholders: [],
             };
+            this.errors = {};
             this.createDialog = false;
         },
     },
@@ -252,7 +273,7 @@ export default {
     border-radius: 4px;
     position: relative;
     padding: 5px;
-    width: 211px;
+    width: 230px;
     margin: 4px;
     cursor: pointer;
     font-size: 12px;

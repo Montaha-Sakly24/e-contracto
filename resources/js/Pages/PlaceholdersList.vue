@@ -66,9 +66,15 @@
             </v-data-table>
         </v-card>
     </v-container>
-    <v-dialog v-model="createDialog" max-width="400px">
+    <v-dialog v-model="createDialog" max-width="450px">
         <v-card>
-            <v-card-title>Add New Placeholder</v-card-title>
+            <v-card-title
+                class="title text-uppercase font-weight-bold font-italic title-modal"
+            >
+                Add New Placeholder
+            </v-card-title>
+            <v-divider class="line-hr"></v-divider>
+
             <v-card-text>
                 <v-text-field
                     v-model="newPlaceholder.name"
@@ -76,6 +82,7 @@
                     variant="outlined"
                     required
                     @input="updateIdentification"
+                    :error-messages="errors['name']"
                 ></v-text-field>
                 <v-text-field
                     v-model="newPlaceholder.identification"
@@ -87,18 +94,30 @@
                     disabled
                 ></v-text-field>
             </v-card-text>
-            <v-card-actions>
-                <v-btn color="info" variant="flat" @click="createPlaceholder">
+            <v-divider class="line-hr-footer"></v-divider>
+            <v-card-actions class="actions-msg-btn-modal">
+                <v-spacer></v-spacer>
+                <v-btn variant="outlined" @click="cancelCreate">Cancel</v-btn>
+                <v-btn
+                    color="#1e0c8c"
+                    variant="elevated"
+                    @click="createPlaceholder"
+                >
                     Create
                 </v-btn>
-                <v-btn color="error" @click="cancelCreate">Cancel</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
 
-    <v-dialog v-model="updateDialog" max-width="400px">
+    <v-dialog v-model="updateDialog" max-width="450px">
         <v-card>
-            <v-card-title>Update Placeholder </v-card-title>
+            <v-card-title
+                class="title text-uppercase font-weight-bold font-italic title-modal"
+            >
+                Update Placeholder
+            </v-card-title>
+            <v-divider class="line-hr"></v-divider>
+
             <v-card-text>
                 <p>Name</p>
                 <v-text-field
@@ -106,6 +125,7 @@
                     variant="outlined"
                     required
                     @input="updateIdentification"
+                    :error-messages="errors['name']"
                 ></v-text-field>
                 <p>Identification</p>
                 <v-text-field
@@ -115,11 +135,17 @@
                     disabled
                 ></v-text-field>
             </v-card-text>
-            <v-card-actions>
-                <v-btn color="info" variant="flat" @click="updatePlaceholder">
+            <v-divider class="line-hr-footer"></v-divider>
+            <v-card-actions class="actions-msg-btn-modal">
+                <v-spacer></v-spacer>
+                <v-btn variant="outlined" @click="cancelUpdate">Cancel</v-btn>
+                <v-btn
+                    color="#1e0c8c"
+                    variant="elevated"
+                    @click="updatePlaceholder"
+                >
                     Save changes
                 </v-btn>
-                <v-btn color="error" @click="cancelUpdate">Cancel</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
@@ -160,12 +186,8 @@ export default {
                     sortable: false,
                 },
             ],
+            errors: {},
         };
-    },
-    watch: {
-        "newPlaceholder.name"(newValue) {
-            this.newPlaceholder.identification = `[${newValue.toUpperCase()}]`;
-        },
     },
     mounted() {
         this.fetchPlaceholders();
@@ -183,11 +205,14 @@ export default {
         showCreateDialog() {
             this.newPlaceholder.name = "";
             this.newPlaceholder.identification = "";
+            this.errors = {};
             this.createDialog = true;
         },
 
         async createPlaceholder() {
             try {
+                this.newPlaceholder.identification = `[${this.newPlaceholder.name}]`;
+
                 const response = await axios.post(
                     "/api/placeholders",
                     this.newPlaceholder
@@ -200,18 +225,15 @@ export default {
                 });
                 await this.fetchPlaceholders();
             } catch (error) {
-                if (error.response && error.response.status === 400) {
-                    if (error.response.data && error.response.data.errors) {
-                        this.errors = error.response.data.errors;
-                    } else {
-                        console.error("Validation error:", error.response.data);
+                if (error.response && error.response.data.errors) {
+                    const errors = error.response.data.errors;
+                    this.errors = {};
+
+                    if (errors.name) {
+                        this.errors.name = errors.name[0];
                     }
                 } else {
-                    console.error("Error creating placeholder:", error);
-                    toast.fire({
-                        icon: "error",
-                        title: "Error creating placeholder ",
-                    });
+                    console.error("An unexpected error occurred:", error);
                 }
             }
         },
@@ -219,16 +241,13 @@ export default {
             this.createDialog = false;
         },
         updateIdentification() {
-            const formattedIdentification = this.newPlaceholder.name
-                .replace(/([A-Z])/g, "_$1")
-                .toUpperCase()
-                .replace(/^_/, "");
-            this.newPlaceholder.identification = `[${formattedIdentification}]`;
+            this.newPlaceholder.identification = `[${this.newPlaceholder.name}]`;
         },
 
         showUpdateDialog(placeholder) {
             this.placeholder = { ...placeholder };
             this.newPlaceholder.name = placeholder.name;
+            this.errors = {};
             this.updateIdentification();
             this.updateDialog = true;
         },
@@ -251,11 +270,16 @@ export default {
                     title: "Placeholder updated successfully",
                 });
             } catch (error) {
-                console.error("Error updating placeholder:", error);
-                toast.fire({
-                    icon: "error",
-                    title: "Error updating placeholder",
-                });
+                if (error.response && error.response.data.errors) {
+                    const errors = error.response.data.errors;
+                    this.errors = {};
+
+                    if (errors.name) {
+                        this.errors.name = errors.name[0];
+                    }
+                } else {
+                    console.error("An unexpected error occurred:", error);
+                }
             }
         },
 

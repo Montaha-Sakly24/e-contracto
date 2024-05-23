@@ -106,11 +106,22 @@
                 @click="viewDialog = false"
                 >mdi-close</v-icon
             >
+
             <v-card-text class="a4-size">
-                <div v-html="model.content"></div>
+                <v-container>
+                    <v-row>
+                        <v-col cols="12">
+                            <div
+                                v-html="model.content"
+                                class="text--primary"
+                            ></div>
+                        </v-col>
+                    </v-row>
+                </v-container>
             </v-card-text>
+
             <v-btn
-                color="orange"
+                color="darkblueshade"
                 class="generate-btn mt-3"
                 @click="showGeneratContractInterface"
             >
@@ -308,12 +319,22 @@ export default {
     margin-top: 20px;
     overflow-y: auto;
 }
+
 .generate-btn {
     align-self: end;
 }
+
 .v-dialog {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+/* Stylisation du contenu */
+.text--primary {
+    font-family: "Roboto", sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 20px;
 }
 </style>

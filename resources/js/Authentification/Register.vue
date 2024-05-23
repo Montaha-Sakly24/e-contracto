@@ -182,13 +182,6 @@ export default {
                 }
             } catch (e) {
                 errors.value = e.response.data.message;
-                swal.fire({
-                    icon: "error",
-                    title: "Oops...",
-                    text: "Something went wrong!",
-                    showConfirmButton: false,
-                    timer: 1500,
-                });
             }
         };
 

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Auth\Events\PasswordReset;
+use Spatie\Permission\Models\Role;
 
 
 class ResetForgotPasswordController extends Controller
@@ -16,6 +17,13 @@ class ResetForgotPasswordController extends Controller
     {
         $request->validate(['email' => 'required|email']);
 
+// Check if the user with the provided email is a superadministrator
+$user = User::where('email', $request->email)->first();
+$superadminRole = Role::where('name', 'Superadmin')->first();
+
+if ($user && $user->hasRole($superadminRole)) {
+    return response()->json(['error' => 'Superadministrators cannot reset their passwords.'], 403);
+}
         $status = Password::sendResetLink(
             $request->only('email')
         );

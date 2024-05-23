@@ -20,9 +20,9 @@ class ProfileController extends Controller
         $user = Auth::user();
 
         $validatedData = $request->validate([
-            'name' => 'string|max:25',
-            'phone' => 'string|regex:/^[0-9]{8,15}$/',
-            'address' => 'string|max:255',
+            'name' => 'required|string|max:25',
+            'phone' => 'required|string|regex:/^[0-9]{8,15}$/',
+            'address' => 'required|string|max:255',
         ]);
 
         try {
@@ -66,12 +66,11 @@ class ProfileController extends Controller
 
         try {
             $user->delete();
-            Auth::logout();
+            return response()->json(['message' => 'Your account has been deleted successfully.'], 200);
+        } catch (\Exception $e) {
 
-             return response()->json(['message' => 'Your account has been deleted successfully.'], 200);
-    } catch (\Exception $e) {
-        return response()->json(['error' => 'Something went wrong. Please try again later.'], 500);
-    }
+            return response()->json(['error' => 'Something went wrong. Please try again later.'], 500);
+        }
     }
 }
 

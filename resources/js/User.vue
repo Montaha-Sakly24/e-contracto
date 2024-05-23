@@ -44,6 +44,8 @@
                     </v-list-item-content>
                 </v-list-item>
             </v-list>
+
+            <v-btn class="mt-6 logout-btn" @click="logout">Logout</v-btn>
         </v-navigation-drawer>
 
         <v-app-bar app color="#0c4d86">
@@ -116,6 +118,10 @@ export default {
         viewModels() {
             this.$router.push({ name: "Home" });
         },
+        logout() {
+            localStorage.clear();
+            this.$router.push({ name: "Login" });
+        },
     },
 };
 </script>
@@ -130,5 +136,13 @@ export default {
 }
 .v-navigation-drawer {
     background-image: linear-gradient(30deg, #7aaeb9, #0c4d86);
+}
+.logout-btn {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: transparent;
+    color: white;
 }
 </style>

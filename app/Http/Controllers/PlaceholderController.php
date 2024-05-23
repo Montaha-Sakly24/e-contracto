@@ -11,7 +11,7 @@ class PlaceholderController extends Controller
     public function createPlaceholder(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required',
+            'name' => 'required|max:25',
             'identification' =>'required',
         ]);
 
@@ -29,7 +29,7 @@ class PlaceholderController extends Controller
     public function updatePlaceholder(Request $request, Placeholder $placeholder)
 {
     $validated = $request->validate([
-        'name' => 'required',
+        'name' => 'required|max:25',
         'identification' => 'required',
     ]);
     $placeholder->update($validated);

@@ -5,7 +5,7 @@ const store = createStore({
     state: {
         //define variables
         token: localStorage.getItem("token") || 0,
-        user: null,
+        user: JSON.parse(localStorage.getItem("user")) || null,
     },
 
     mutations: {
@@ -14,8 +14,12 @@ const store = createStore({
             state.token = payload;
         },
 
-        SET_USER(state, user) {
-            state.user = user;
+        setUser({ commit }, user) {
+            commit("SET_USER", user);
+        },
+        clearUser({ commit }) {
+            localStorage.removeItem("user"); // Clear user from localStorage
+            commit("SET_USER", null);
         },
     },
 

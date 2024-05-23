@@ -23,7 +23,7 @@
                         <td>
                             <div class="action-buttons">
                                 <v-btn
-                                    color="blue"
+                                    color="accent"
                                     variant="outlined"
                                     @click.prevent.stop="viewContract(item)"
                                     ><font-awesome-icon
@@ -42,10 +42,12 @@
                                 </v-btn>
                                 <v-btn
                                     color="darkblueshade"
+                                    variant="outlined"
                                     @click="exportContract(item)"
                                     class="export-btn"
                                 >
-                                    <v-icon>mdi-download</v-icon> Docx
+                                    <v-icon class="pr-2">mdi-download</v-icon>
+                                    Docx
                                 </v-btn>
                                 <v-btn
                                     color="red"
@@ -57,8 +59,9 @@
                                 </v-btn>
                                 <v-btn
                                     color="muted"
+                                    variant="outlined"
                                     @click="sendContract(item)"
-                                >
+                                    ><v-icon class="pr-2">mdi-mail</v-icon>
                                     Send
                                 </v-btn>
                             </div>
@@ -121,20 +124,35 @@
             </v-card>
         </v-dialog>
         <v-dialog v-model="showSendDialog" persistent max-width="400">
-            <v-card>
-                <v-card-title>Send Contract</v-card-title>
+            <v-card class="send-dialog">
+                <v-card-title class="send-dialog-title"
+                    >Send Contract</v-card-title
+                >
                 <v-card-text>
                     <v-text-field
                         v-model="recipientEmail"
                         label="Recipient Email"
+                        variant="outlined"
+                        dense
+                        :error-messages="errors.recipient_email"
                     ></v-text-field>
                     <v-text-field
                         v-model="subject"
                         label="Subject"
+                        variant="outlined"
+                        dense
+                        :error-messages="errors.subject"
                     ></v-text-field>
-                    <v-textarea v-model="body" label="Body"></v-textarea>
+                    <v-textarea
+                        v-model="body"
+                        label="Body"
+                        variant="outlined"
+                        dense
+                        :error-messages="errors.body"
+                    ></v-textarea>
                 </v-card-text>
-                <v-card-actions>
+                <v-card-actions class="justify-end">
+                    <v-btn text @click="showSendDialog = false">Cancel</v-btn>
                     <v-btn
                         color="blue darken-1"
                         text
@@ -142,7 +160,6 @@
                     >
                         Send
                     </v-btn>
-                    <v-btn text @click="showSendDialog = false">Cancel</v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
@@ -169,6 +186,7 @@ export default {
             recipientEmail: "",
             subject: "",
             body: "",
+            errors: {},
             headers: [
                 {
                     title: "#",
@@ -310,19 +328,18 @@ export default {
                 this.contract = contract;
             } catch (error) {
                 console.error("Error sending contract:", error);
-                toast.fire({
-                    icon: "error",
-                    title: "Error sending contract",
-                });
             }
         },
         sendContractWithEmail() {
+            const senderEmail = localStorage.getItem("userEmail"); //////////
+            console.log("Sender's Email:", senderEmail);
             axios
                 .post("/api/contracts/send-contract", {
                     contract_id: this.contract.id,
                     recipient_email: this.recipientEmail,
                     subject: this.subject,
                     body: this.body,
+                    sender_email: senderEmail, /////////////
                 })
                 .then((response) => {
                     console.log(response.data.message);
@@ -330,13 +347,27 @@ export default {
                         icon: "success",
                         title: "Contract sent successfully",
                     });
+                    this.errors = {};
                 })
                 .catch((error) => {
                     console.error("Error sending contract:", error);
-                    toast.fire({
-                        icon: "error",
-                        title: "Error sending contract",
-                    });
+                    if (error.response && error.response.status === 422) {
+                        // If validation error, parse the error response and set the errors object
+                        const errorData = error.response.data;
+                        if (errorData.errors) {
+                            // If there are errors for specific fields
+                            this.errors = errorData.errors;
+                        } else if (errorData.error) {
+                            // If there is a general error message
+                            this.errors = { general: [errorData.error] };
+                        }
+                    } else {
+                        console.error("Error sending contract:", error);
+                        toast.fire({
+                            icon: "error",
+                            title: "Error sending contract",
+                        });
+                    }
                 })
                 .finally(() => {
                     this.showSendDialog = false;
@@ -426,5 +457,15 @@ b {
     border-radius: 8px;
     height: 37px !important;
     width: 40px !important;
+}
+.send-dialog {
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.send-dialog-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
 }
 </style>

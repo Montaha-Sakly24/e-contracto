@@ -11,10 +11,10 @@ class ContractCategoryController extends Controller
     public function createCategory(Request $request)
     {
         $validated = $request->validate([
-            'title' => 'required|max:255',
-            'description' =>'required',
+            'title' => 'required|max:25',
+            'description' =>'required|max:225',
         ]);
-
+        //422 Unprocessable Entity status code along with the validation errors in a format JSON
         $category = ContractCategory::create($validated);
         return response()->json($category, 201);
     }
@@ -40,13 +40,9 @@ class ContractCategoryController extends Controller
     public function updateCategory(Request $request,ContractCategory $category)
     {
         $validated = $request->validate([
-            'title' => 'max:25',
-            'description' =>'max:225',
+            'title' => 'required|max:25',
+            'description' =>'required|max:225',
         ]);
-        // Vérifie si la catégorie de contrat existe
-        if (is_null($category)) {
-            return response()->json(['error' => 'Catégorie de contrat non trouvée'], 404);
-        }
 
          $category->update($validated);
         return response()->json($category,200);

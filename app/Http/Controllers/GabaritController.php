@@ -4,27 +4,34 @@ namespace App\Http\Controllers;
 
 use App\Models\Gabarit;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class GabaritController extends Controller
 {
     public function createGabarit(Request $request){
+        try {
+            $validatedData = $request->validate([
+                'title' => 'required|string|max:25',
+                'content' => 'required|string|max:3000',
+                'placeholders' => 'array',
+                'placeholders.*' => 'integer|exists:placeholders,id'
+            ]);
 
-        $validatedData = $request->validate([
-            'title' => 'required|string',
-            'content' => 'string|max:3000',
-            'placeholders' => 'array',
-            'placeholders.*' => 'integer|exists:placeholders,id'
-        ]);
-        $gabarit = Gabarit::create([
-            'title' => $request->input('title'),
-            'content' => $request->input('content')
-        ]);
+            $gabarit = Gabarit::create([
+                'title' => $validatedData['title'],
+                'content' => $validatedData['content']
+            ]);
 
-        if ($request->filled('placeholders')) {
-            $gabarit->placeholders()->attach($request->input('placeholders'));
+            if ($request->filled('placeholders')) {
+                $gabarit->placeholders()->attach($validatedData['placeholders']);
+            }
+
+            return response()->json(['gabarit' => $gabarit], 201);
+        } catch (ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['errors' => ['internal' => 'An error occurred while processing your request.']], 500);
         }
-
-        return response()->json(['gabarit' => $gabarit], 201);
     }
 
     public function getAllGabarits()
@@ -41,8 +48,8 @@ class GabaritController extends Controller
     public function updateGabarit(Request $request, Gabarit $gabarit)
     {
         $validated = $request->validate([
-            'title' => 'max:25',
-            'content' => 'max:3000',
+            'title' => 'required|max:25',
+            'content' => 'required|max:3000',
             'placeholders' => 'array',
             'placeholders.*' => 'integer|exists:placeholders,id'
         ]);

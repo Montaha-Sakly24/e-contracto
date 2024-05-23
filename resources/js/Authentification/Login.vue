@@ -38,7 +38,8 @@
                             prepend-inner-icon="mdi-email-outline"
                             variant="outlined"
                             clearable
-                            :error-messages="errors.email ? errors.email : []"
+                            :error-messages="errors.email"
+                            @input="clearError('email')"
                         ></v-text-field>
 
                         <div
@@ -65,9 +66,8 @@
                             "
                             :type="visible ? 'text' : 'password'"
                             @click:append-inner="visible = !visible"
-                            :error-messages="
-                                errors.password ? errors.password : []
-                            "
+                            :error-messages="errors.password"
+                            @input="clearError('password')"
                         ></v-text-field>
 
                         <v-btn
@@ -80,6 +80,9 @@
                             Login
                         </v-btn>
 
+                        <v-card-text v-if="error" class="text-center text-red">
+                            {{ error }}
+                        </v-card-text>
                         <v-card-text class="text-center">
                             <router-link
                                 class="text-blue text-decoration-none"
@@ -95,12 +98,14 @@
         </v-col>
     </v-row>
 </template>
+
 <script>
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 import contract from "../Pages/contract.png";
 import axios from "axios";
+
 export default {
     data: () => ({
         visible: false,
@@ -114,25 +119,21 @@ export default {
             email: "",
             password: "",
         });
-        let errors = reactive({
-            email: "",
-            password: "",
-        });
 
-        let error = ref("");
+        const errors = ref({});
+        const error = ref("");
 
         const login = async () => {
+            errors.value = {}; // Reset errors
+            error.value = ""; // Reset general error
+
             try {
                 const response = await axios.post("/api/login", form);
                 if (response.data.success) {
-                    console.log("1");
-                    //
-                    const userId = response.data.data.userId;
-                    console.log("User ID before storing:", userId);
-                    localStorage.setItem("userId", userId);
-                    //
                     store.dispatch("setToken", response.data.data.token);
                     const role = response.data.data.role;
+                    const email = response.data.data.email;
+                    localStorage.setItem("userEmail", email);
                     localStorage.setItem("role", role[0]);
                     if (role.includes("Superadmin")) {
                         router.push({ name: "SuperadminDashboard" });
@@ -151,41 +152,32 @@ export default {
                         timer: 1400,
                     });
                 } else {
-                    console.log("2");
-
-                    if (response.status === 403) {
-                        error.value =
-                            "Your account is deactivated. Please contact the administrator!";
-                        swal.fire({
-                            icon: "error",
-                            title: "Oops...",
-                            text: "Your account is deactivated. Please contact the administrator!",
-                            showConfirmButton: false,
-                            timer: 2000,
-                        });
-                    } else {
-                        console.log("3");
-
-                        swal.fire({
-                            icon: "error",
-                            title: "Oops...",
-                            text: "Invalid email address or password.",
-                            showConfirmButton: false,
-                            timer: 2000,
-                        });
-                        error.value =
-                            response.data.message ||
-                            "Invalid email address or password.";
-                    }
+                    handleErrors(response);
                 }
-            } catch (error) {
-                swal.fire({
-                    icon: "error",
-                    title: "Oops...",
-                    text: "Invalid email address or password",
-                    showConfirmButton: false,
-                    timer: 2000,
-                });
+            } catch (e) {
+                handleErrors(e.response);
+            }
+        };
+
+        const handleErrors = (response) => {
+            if (response.status === 422) {
+                errors.value = response.data.errors;
+            } else if (response.status === 401) {
+                errors.value = response.data.errors || {};
+                error.value =
+                    response.data.message ||
+                    "Invalid email address or password.";
+            } else if (response.status === 403) {
+                error.value =
+                    "Your account is deactivated. Please contact the administrator!";
+            } else {
+                error.value = "An unexpected error occurred. Please try again.";
+            }
+        };
+
+        const clearError = (field) => {
+            if (errors.value[field]) {
+                delete errors.value[field];
             }
         };
 
@@ -194,17 +186,22 @@ export default {
             login,
             error,
             errors,
+            clearError,
         };
     },
 };
 </script>
+
 <style>
 .background-interface {
-    height: 610px;
+    height: 100vh;
     background-image: linear-gradient(-20deg, #7aaeb9, #0c4d86);
 }
 .form-card {
     height: 500px;
     margin: 15px;
+}
+.text-red {
+    color: red;
 }
 </style>

@@ -116,12 +116,13 @@
                             v-model="newAdmin.name"
                             label="Name"
                             variant="outlined"
-                            :rules="ruleTitle"
+                            :error-messages="errors['name']"
                         ></v-text-field>
                         <v-text-field
                             v-model="newAdmin.phone"
                             label="Phone"
                             variant="outlined"
+                            :error-messages="errors['phone']"
                         ></v-text-field>
                         <v-text-field
                             v-model="newAdmin.password"
@@ -134,6 +135,7 @@
                             @click:append-inner="
                                 isPasswordVisible = !isPasswordVisible
                             "
+                            :error-messages="errors['password']"
                         ></v-text-field>
                     </v-col>
                     <v-col cols="6">
@@ -141,11 +143,13 @@
                             v-model="newAdmin.email"
                             label="Email"
                             variant="outlined"
+                            :error-messages="errors['email']"
                         ></v-text-field>
                         <v-text-field
                             v-model="newAdmin.address"
                             label="Address"
                             variant="outlined"
+                            :error-messages="errors['address']"
                         ></v-text-field>
                         <v-text-field
                             v-model="newAdmin.c_password"
@@ -163,6 +167,7 @@
                                 isConfirmPasswordVisible =
                                     !isConfirmPasswordVisible
                             "
+                            :error-messages="errors['c_password']"
                         ></v-text-field>
                     </v-col>
                 </v-row>
@@ -263,13 +268,10 @@ export default {
                 password: "",
                 c_password: "",
             },
+            errors: {},
         };
     },
-    computed: {
-        ruleTitle() {
-            return [(v) => !!v || "Title is required."];
-        },
-    },
+
     mounted() {
         this.fetchAdmins();
     },
@@ -302,9 +304,10 @@ export default {
                 });
                 await this.fetchAdmins();
             } catch (error) {
-                if (error.response && error.response.status === 400) {
+                if (error.response && error.response.status === 422) {
+                    // Le code 422 indique une erreur de validation
                     if (error.response.data && error.response.data.errors) {
-                        this.errors = error.response.data.errors;
+                        this.errors = error.response.data.errors; // Stockez les erreurs dans la propriété errors
                     } else {
                         console.error("Validation error:", error.response.data);
                     }

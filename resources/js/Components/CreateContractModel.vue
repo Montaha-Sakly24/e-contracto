@@ -1,7 +1,9 @@
 <template>
-    <v-card-title class="text-h6 font-weight-regular justify-space-between">
+    <v-card-title class="font-italic title-modal text-h6 justify-space-between">
         {{ currentTitle }}
     </v-card-title>
+    <v-divider class="line-hr"></v-divider>
+
     <v-window v-model="step">
         <v-window-item :value="1">
             <v-card-text>
@@ -10,12 +12,16 @@
                     label="Title"
                     variant="outlined"
                     required
+                    :error-messages="errors.title ? [errors.title] : []"
                 ></v-text-field>
                 <v-textarea
                     v-model="newModel.description"
                     label="Description"
                     variant="outlined"
                     required
+                    :error-messages="
+                        errors.description ? [errors.description] : []
+                    "
                 ></v-textarea>
             </v-card-text>
         </v-window-item>
@@ -23,10 +29,6 @@
             <v-row>
                 <v-col cols="3" class="sidebar">
                     <v-card class="pa-4" outlined>
-                        <div class="d-flex justify-between align-center mb-4">
-                            <v-btn @click="all">Tous</v-btn>
-                            <v-btn @click="none">Aucun</v-btn>
-                        </div>
                         <v-expansion-panels>
                             <v-expansion-panel
                                 v-for="(gabarit, index) in gabarits"
@@ -51,10 +53,13 @@
                                 </v-expansion-panel-header>
                                 <v-expansion-panel-content v-if="panel[index]">
                                     <v-card>
-                                        <v-card-text v-model="newModel.content"
-                                            ><div
-                                                v-html="gabarit.content"
-                                            ></div>
+                                        <v-card-text v-model="newModel.content">
+                                            <div v-html="gabarit.content"></div>
+                                            <span
+                                                v-if="errors.content"
+                                                class="error-message"
+                                                >{{ errors.content[0] }}</span
+                                            >
                                         </v-card-text>
                                     </v-card>
                                 </v-expansion-panel-content>
@@ -69,8 +74,18 @@
                         @dragover.prevent="allowDrop"
                         @drop="onDrop"
                     >
-                        <div v-for="(item, index) in droppedItems" :key="index">
+                        <div
+                            v-for="(item, index) in droppedItems"
+                            :key="index"
+                            class="template-item"
+                            @dblclick="toggleRemoveButton(index)"
+                        >
                             <div v-html="item.content"></div>
+                            <v-btn
+                                v-if="showRemoveButton[index]"
+                                @click="removeTemplate(index)"
+                                >Remove</v-btn
+                            >
                         </div>
                     </v-card>
                 </v-col>
@@ -92,6 +107,9 @@
                         chips
                         color="blue"
                         required
+                        :error-messages="
+                            errors.category_id ? [errors.category_id] : []
+                        "
                     ></v-select>
                 </v-card-text>
             </v-list>
@@ -101,17 +119,25 @@
         <v-btn v-if="step > 1" color="error" variant="text" @click="step--"
             >Back</v-btn
         >
-        <v-btn v-if="step == 1" color="error" variant="text" @click="resetModel"
+        <v-btn v-if="step == 1" variant="outlined" @click="resetModel"
             >Cancel</v-btn
         >
-        <v-btn v-if="step < 3" color="info" variant="flat" @click="step++"
+        <v-btn
+            v-if="step < 3"
+            color="#1e0c8c"
+            variant="elevated"
+            @click="step++"
             >Next</v-btn
         >
         <v-spacer></v-spacer>
-        <v-btn v-if="step == 3" color="error" variant="text" @click="resetModel"
+        <v-btn v-if="step == 3" variant="outlined" @click="resetModel"
             >Cancel</v-btn
         >
-        <v-btn v-if="step == 3" color="info" variant="flat" @click="createModel"
+        <v-btn
+            v-if="step == 3"
+            color="#1e0c8c"
+            variant="elevated"
+            @click="createModel"
             >Create</v-btn
         >
     </v-card-actions>
@@ -144,6 +170,8 @@ export default {
             gabarit: {},
             categories: [],
             selectedCategory: null,
+            errors: {},
+            showRemoveButton: [],
         };
     },
     computed: {
@@ -184,12 +212,7 @@ export default {
         togglePanel(index) {
             this.panel[index] = !this.panel[index];
         },
-        all() {
-            this.panel = Array(this.items.length).fill(true);
-        },
-        none() {
-            this.panel = Array(this.items.length).fill(false);
-        },
+
         allowDrop(event) {
             event.preventDefault();
         },
@@ -209,18 +232,20 @@ export default {
             this.droppedItems.push(gabaritData);
             this.newModel.content += gabaritData.content + "\n";
         },
+        toggleRemoveButton(index) {
+            this.showRemoveButton[index] = !this.showRemoveButton[index];
+        },
+        removeTemplate(index) {
+            this.droppedItems.splice(index, 1);
 
+            this.updateContent();
+        },
+        updateContent() {
+            this.newModel.content = this.droppedItems
+                .map((item) => item.content)
+                .join("\n");
+        },
         async createModel() {
-            if (
-                !this.newModel.title ||
-                !this.newModel.description ||
-                !this.selectedCategory
-            ) {
-                alert(
-                    "All fields, including a category selection, must be filled!"
-                );
-                return;
-            }
             const newModelData = {
                 title: this.newModel.title,
                 description: this.newModel.description,
@@ -250,17 +275,30 @@ export default {
                 }
             } catch (error) {
                 console.error("Error creating model:", error);
-                toast.fire({
-                    icon: "error",
-                    title: " Error creating model",
-                });
+                if (
+                    error.response &&
+                    error.response.data &&
+                    error.response.data.errors
+                ) {
+                    this.errors = error.response.data.errors;
+                } else {
+                    toast.fire({
+                        icon: "error",
+                        title: " Error creating model",
+                    });
+                }
             }
         },
         resetModel() {
+            this.newModel.title = "";
+            this.newModel.description = "";
+            this.newModel.content = "";
+            this.selectedCategory = null;
+            this.errors = {};
             if (localStorage.getItem("role") == "Superadmin") {
-                this.router.push({ name: "SuperadminContractModel" });
+                this.router.push({ name: "SuperadminContractModels" });
             } else {
-                this.router.push({ name: "AdminContractModel" });
+                this.router.push({ name: "AdminContractModels" });
             }
         },
     },
@@ -287,5 +325,8 @@ export default {
 }
 .text-area {
     margin-left: 40px;
+}
+.template-item {
+    margin-bottom: 12px;
 }
 </style>

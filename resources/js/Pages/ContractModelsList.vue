@@ -34,7 +34,7 @@
                                 <v-btn
                                     color="darkblue"
                                     variant="outlined"
-                                    @click="showUpdateDialog(item)"
+                                    @click="showEditInterface(item)"
                                     ><font-awesome-icon
                                         class="pr-2"
                                         :icon="['fas', 'pen-alt']"
@@ -79,36 +79,6 @@
                 </v-card-text>
             </v-card>
         </v-dialog>
-        <v-dialog v-model="updateDialog" max-width="400px">
-            <v-card>
-                <v-card-title>{{ model.title }}</v-card-title>
-                <v-card-text>
-                    <p>Title</p>
-                    <v-text-field
-                        v-model="newModel.title"
-                        variant="outlined"
-                        required
-                    ></v-text-field>
-                    <p>Content</p>
-                    <v-textarea
-                        v-model="newModel.description"
-                        variant="outlined"
-                        required
-                    ></v-textarea>
-                    <v-textarea
-                        v-model="newModel.content"
-                        variant="outlined"
-                        required
-                    ></v-textarea>
-                </v-card-text>
-                <v-card-actions>
-                    <v-btn color="info" variant="flat" @click="updateModel">
-                        Save changes
-                    </v-btn>
-                    <v-btn color="error" @click="cancelUpdate">Cancel</v-btn>
-                </v-card-actions>
-            </v-card>
-        </v-dialog>
     </v-container>
 </template>
 
@@ -116,10 +86,12 @@
 import axios from "axios";
 import { useRouter } from "vue-router";
 import CreateContractModel from "../Components/CreateContractModel.vue";
+import EditContractModel from "../Components/EditContractModel.vue";
 
 export default {
     components: {
         CreateContractModel,
+        EditContractModel,
     },
     data() {
         return {
@@ -127,7 +99,6 @@ export default {
             model: {},
             models: [],
             viewDialog: false,
-            updateDialog: false,
             newModel: {
                 title: "",
                 description: "",
@@ -182,39 +153,18 @@ export default {
             }
         },
 
-        showUpdateDialog(model) {
-            this.model = { ...model };
-            this.newModel.title = model.title;
-            this.newModel.description = model.description;
-            this.newModel.content = model.content;
-            this.updateDialog = true;
-        },
-        async updateModel(model) {
-            try {
-                const response = await axios.put(
-                    `/api/models/${this.model.id}`,
-                    this.newModel
-                );
-                this.models = this.models.map((cat) =>
-                    cat.id === this.model.id
-                        ? { ...cat, ...response.data }
-                        : cat
-                );
-                this.updateDialog = false;
-                toast.fire({
-                    icon: "success",
-                    title: "Model updated successfully ",
+        showEditInterface(model) {
+            if (localStorage.getItem("role") == "Superadmin") {
+                this.router.push({
+                    name: "SuperadminEditContractModel",
+                    params: { modelId: model.id },
                 });
-            } catch (error) {
-                console.error("Error updating model:", error);
-                toast.fire({
-                    icon: "error",
-                    title: "Error updating model ",
+            } else {
+                this.router.push({
+                    name: "AdminEditContractModel",
+                    params: { modelId: model.id },
                 });
             }
-        },
-        cancelUpdate() {
-            this.updateDialog = false;
         },
 
         deleteModel(model) {

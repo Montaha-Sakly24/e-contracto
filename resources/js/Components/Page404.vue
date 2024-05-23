@@ -2,24 +2,20 @@
     <section class="page_404">
         <div class="container">
             <div class="row">
-                <div class="col-sm-12">
-                    <div class="col-sm-10 col-sm-offset-1 text-center">
-                        <div class="four_zero_four_bg">
-                            <h1 class="text-center">404</h1>
-                        </div>
+                <div class="col-sm-12 text-center">
+                    <div class="four_zero_four_bg">
+                        <h1>404</h1>
+                    </div>
 
-                        <div class="contant_box_404">
-                            <h3 class="h2">Look like you're lost</h3>
-
-                            <p>the page you are looking for not avaible!</p>
-
-                            <button
-                                @click.prevent="backToDashboard"
-                                class="link_404"
-                            >
-                                Go to Home
-                            </button>
-                        </div>
+                    <div class="contant_box_404">
+                        <h3>Looks like you're lost</h3>
+                        <p>The page you are looking for is not available!</p>
+                        <button
+                            @click.prevent="backToDashboard"
+                            class="link_404"
+                        >
+                            Go to Home
+                        </button>
                     </div>
                 </div>
             </div>
@@ -37,48 +33,53 @@ export default {
                 this.$router.push({ name: "AdminDashboard" });
             } else if (role == "Simple User") {
                 this.$router.push({ name: "Home" });
+            } else {
+                if (!role) {
+                    this.$router.push({ name: "Login" });
+                }
             }
         },
     },
 };
 </script>
-<style lang="scss" scoped>
-/*======================
-    404 page
-=======================*/
-
+<style scoped>
 .page_404 {
-    padding: 40px 0;
+    padding: 50px 0;
     background: #fff;
     font-family: "Arvo", serif;
 }
 
-.page_404 img {
-    width: 100%;
-}
-
-.four_zero_four_bg {
-    background-image: url(https://cdn.dribbble.com/users/285475/screenshots/2083086/dribbble_1.gif);
-    height: 400px;
-    background-position: center;
-}
-
 .four_zero_four_bg h1 {
-    font-size: 80px;
+    font-size: 120px;
+    margin: 0;
 }
 
-.four_zero_four_bg h3 {
-    font-size: 80px;
+.contant_box_404 {
+    margin-top: 20px;
+}
+
+.contant_box_404 h3 {
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+
+.contant_box_404 p {
+    font-size: 18px;
+    margin-bottom: 20px;
 }
 
 .link_404 {
-    color: #fff !important;
-    padding: 10px 20px;
-    background: #39ac31;
-    margin: 20px 0;
-    display: inline-block;
+    color: #fff;
+    padding: 12px 24px;
+    background: blue;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background 0.3s;
 }
-.contant_box_404 {
-    margin-top: -50px;
+
+.link_404:hover {
+    background: rgb(70, 156, 243);
 }
 </style>

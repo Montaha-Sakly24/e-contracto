@@ -53,8 +53,10 @@
             </v-col>
         </v-row>
         <v-dialog v-model="dialog" persistent max-width="500px">
-            <v-card>
-                <v-card-title>Enter a title for the contract</v-card-title>
+            <v-card class="custom-dialog">
+                <v-card-title class="custom-dialog-title"
+                    >Enter a title for the contract</v-card-title
+                >
                 <v-card-text>
                     <v-text-field
                         v-model="contractTitle"
@@ -249,6 +251,7 @@ export default {
 .page_container {
     padding: 20px;
     background-color: #eeeeee;
+    height: 100vh;
 }
 
 .v-btn {
@@ -263,5 +266,15 @@ export default {
         width: 100%;
         margin-top: 10px;
     }
+}
+.custom-dialog {
+    border-radius: 40px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.6);
+}
+
+.custom-dialog-title {
+    font-size: 18px;
+    padding: 16px;
+    color: rgb(5, 5, 188);
 }
 </style>

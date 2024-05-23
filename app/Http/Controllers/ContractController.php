@@ -179,6 +179,7 @@ class ContractController extends Controller
                 'subject' => 'required|string',
                 'body' => 'required|string',
                 'contract_id' => 'required|exists:contracts,id',
+
             ]);
 
             $contractId = $request->input('contract_id');
@@ -205,11 +206,13 @@ class ContractController extends Controller
             $subject = $request->input('subject');
             $body = $request->input('body');
 
-            Mail::raw($body, function ($message) use ($recipientEmail, $subject, $pdfContent) {
+            $senderEmail = $request->input('sender_email');
+
+            Mail::raw($body, function ($message) use ($recipientEmail, $subject, $pdfContent, $senderEmail) {
                 $message->to($recipientEmail)
-                ->from('sender.email@mail.com')
-                        ->subject($subject)
-                        ->attachData($pdfContent, 'contract.pdf');
+                    ->from($senderEmail)
+                    ->subject($subject)
+                    ->attachData($pdfContent, 'contract.pdf');
             });
 
             return response()->json(['message' => 'Contract sent successfully'], 200);
