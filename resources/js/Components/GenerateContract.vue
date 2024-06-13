@@ -166,6 +166,7 @@ export default {
         nextPage() {
             if (this.currentPage * this.fieldsPerPage < this.totalFields) {
                 this.currentPage++;
+            } else {
             }
         },
         previousPage() {

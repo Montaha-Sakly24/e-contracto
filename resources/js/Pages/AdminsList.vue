@@ -305,18 +305,13 @@ export default {
                 await this.fetchAdmins();
             } catch (error) {
                 if (error.response && error.response.status === 422) {
-                    // Le code 422 indique une erreur de validation
                     if (error.response.data && error.response.data.errors) {
-                        this.errors = error.response.data.errors; // Stockez les erreurs dans la propriété errors
+                        this.errors = error.response.data.errors;
                     } else {
                         console.error("Validation error:", error.response.data);
                     }
                 } else {
                     console.error("Error creating admin account:", error);
-                    toast.fire({
-                        icon: "error",
-                        title: "Error creating admin account ",
-                    });
                 }
             }
         },
@@ -331,10 +326,6 @@ export default {
                 this.viewDialog = true;
             } catch (error) {
                 console.error("Error viewing admin:", error);
-                toast.fire({
-                    icon: "error",
-                    title: "Error viewing admin  ",
-                });
             }
         },
 

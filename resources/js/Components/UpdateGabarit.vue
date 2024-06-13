@@ -31,6 +31,7 @@
                                 ref="title"
                                 persistent-placeholder
                                 clearable
+                                :rules="ruleTitle"
                             ></v-text-field>
                         </v-col>
                     </v-row>
@@ -67,14 +68,7 @@
                     </v-row>
                 </v-form>
             </v-card-text>
-            <!-- <div v-if="error" class="message-error-modal">
-                <ul v-if="Array.isArray(error)" class="mb-0">
-                    <li v-for="(e, index) in error" :key="index">
-                        {{ e }}
-                    </li>
-                </ul>
-                <div class="message-error-modal" v-else>{{ error }}</div>
-            </div> -->
+
             <v-divider class="line-hr-footer"></v-divider>
             <v-card-actions class="actions-msg-btn-modal">
                 <v-spacer></v-spacer>
@@ -127,6 +121,9 @@ export default {
                         Promise.reject("See docs to implement AI Assistant")
                     ),
             };
+        },
+        ruleTitle() {
+            return [(v) => !!v || "Title is required."];
         },
     },
     mounted() {

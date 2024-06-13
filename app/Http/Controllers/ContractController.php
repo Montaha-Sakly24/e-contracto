@@ -74,10 +74,9 @@ class ContractController extends Controller
 
             $signatureWidth = 180;
             $signatureHeight = 80;
-            $signatureX = $pageWidth - $signatureWidth - 10;
+            $signatureX = $pageWidth - $signatureWidth - 190;
             $signatureY = $pageHeight - $signatureHeight - 40;
 
-            // Add the signature to the PDF
             $dompdf->getCanvas()->image($contract->signature, $signatureX, $signatureY, $signatureWidth, $signatureHeight);
         }
 
@@ -125,15 +124,15 @@ class ContractController extends Controller
                     'indentation' => ['right' => 1000]
                 ];
 
-                $section->addText(
-                    'Signature:',
-                    [
-                        'name' => 'Arial',
-                        'size' => 12,
-                        'bold' => true
-                    ],
-                    $rightAlignedStyle
-                );
+                // $section->addText(
+                //     'Signature:',
+                //     [
+                //         'name' => 'Arial',
+                //         'size' => 12,
+                //         'bold' => true
+                //     ],
+                //     $rightAlignedStyle
+                // );
 
                 try {
                     $signaturePath = $this->getSignaturePath($contract->signature);
@@ -179,6 +178,7 @@ class ContractController extends Controller
                 'subject' => 'required|string',
                 'body' => 'required|string',
                 'contract_id' => 'required|exists:contracts,id',
+                'sender_email' => 'required|email',
 
             ]);
 
@@ -194,7 +194,7 @@ class ContractController extends Controller
 
                 $signatureWidth = 180;
                 $signatureHeight = 80;
-                $signatureX = $pageWidth - $signatureWidth - 10;
+                $signatureX = $pageWidth - $signatureWidth - 190;
                 $signatureY = $pageHeight - $signatureHeight - 40;
 
                 $dompdf->getCanvas()->image($contract->signature, $signatureX, $signatureY, $signatureWidth, $signatureHeight);
@@ -206,7 +206,7 @@ class ContractController extends Controller
             $subject = $request->input('subject');
             $body = $request->input('body');
 
-            $senderEmail = $request->input('sender_email');
+            $senderEmail =$request->input('sender_email');
 
             Mail::raw($body, function ($message) use ($recipientEmail, $subject, $pdfContent, $senderEmail) {
                 $message->to($recipientEmail)

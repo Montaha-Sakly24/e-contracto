@@ -120,8 +120,8 @@ export default {
                 to: "/admin/profile",
             },
             {
-                icon: "mdi-account-circle",
-                title: "Samples Users",
+                icon: "mdi-account",
+                title: "Contract Seekers",
                 to: "/admin/users",
             },
             {

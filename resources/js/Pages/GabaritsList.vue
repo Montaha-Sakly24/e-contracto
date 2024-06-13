@@ -135,10 +135,6 @@ export default {
                 this.viewDialog = true;
             } else {
                 console.error("Error viewing gabarit:", error);
-                toast.fire({
-                    icon: "error",
-                    title: "Error viewing gabarit ",
-                });
             }
         },
 

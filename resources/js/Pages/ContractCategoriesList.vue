@@ -293,10 +293,6 @@ export default {
                 this.viewDialog = true;
             } catch (error) {
                 console.error("Error viewing category:", error);
-                toast.fire({
-                    icon: "error",
-                    title: "Error viewing category ",
-                });
             }
         },
 

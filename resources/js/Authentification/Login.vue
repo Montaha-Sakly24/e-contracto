@@ -133,6 +133,7 @@ export default {
                     store.dispatch("setToken", response.data.data.token);
                     const role = response.data.data.role;
                     const email = response.data.data.email;
+                    console.log("test email", email);
                     localStorage.setItem("userEmail", email);
                     localStorage.setItem("role", role[0]);
                     if (role.includes("Superadmin")) {

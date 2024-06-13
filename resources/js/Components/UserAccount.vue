@@ -59,7 +59,7 @@
                                     variant="flat"
                                     @click="updateProfile"
                                 >
-                                    Update Profile
+                                    Save Changes
                                 </v-btn>
                             </v-col>
                         </v-row>

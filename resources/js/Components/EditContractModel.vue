@@ -24,6 +24,13 @@
                         errors.description ? [errors.description] : []
                     "
                 ></v-textarea>
+                <v-textarea
+                    v-model="newModel.content"
+                    label="Content"
+                    variant="outlined"
+                    required
+                >
+                </v-textarea>
             </v-card-text>
         </v-col>
         <v-col>
@@ -72,18 +79,6 @@
                                 <v-icon v-else>mdi-chevron-up</v-icon>
                             </div>
                         </v-expansion-panel-header>
-                        <v-expansion-panel-content v-if="panel[index]">
-                            <v-card>
-                                <v-card-text>
-                                    <div v-html="previewContent"></div>
-                                    <span
-                                        v-if="errors.content"
-                                        class="error-message"
-                                        >{{ errors.content[0] }}</span
-                                    >
-                                </v-card-text>
-                            </v-card>
-                        </v-expansion-panel-content>
                     </v-expansion-panel>
                 </v-expansion-panels>
             </v-card>

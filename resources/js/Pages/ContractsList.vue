@@ -123,11 +123,15 @@
                 </div>
             </v-card>
         </v-dialog>
-        <v-dialog v-model="showSendDialog" persistent max-width="400">
+        <v-dialog v-model="showSendDialog" persistent max-width="450">
             <v-card class="send-dialog">
-                <v-card-title class="send-dialog-title"
-                    >Send Contract</v-card-title
+                <v-card-title
+                    class="title text-uppercase font-weight-bold font-italic title-modal"
                 >
+                    Send Contract
+                </v-card-title>
+                <v-divider class="line-hr"></v-divider>
+
                 <v-card-text>
                     <v-text-field
                         v-model="recipientEmail"
@@ -135,27 +139,37 @@
                         variant="outlined"
                         dense
                         :error-messages="errors.recipient_email"
+                        @input="validEmail()"
                     ></v-text-field>
+                    <p v-if="verifEmail">required</p>
                     <v-text-field
                         v-model="subject"
                         label="Subject"
                         variant="outlined"
                         dense
                         :error-messages="errors.subject"
+                        @input="validSubject()"
                     ></v-text-field>
+                    <p v-if="verifSubject">required</p>
                     <v-textarea
                         v-model="body"
                         label="Body"
                         variant="outlined"
                         dense
                         :error-messages="errors.body"
+                        @input="validBody()"
                     ></v-textarea>
+                    <p v-if="verifBody">required</p>
                 </v-card-text>
-                <v-card-actions class="justify-end">
-                    <v-btn text @click="showSendDialog = false">Cancel</v-btn>
+                <v-divider class="line-hr-footer"></v-divider>
+                <v-card-actions class="actions-msg-btn-modal">
+                    <v-spacer></v-spacer>
+                    <v-btn variant="outlined" @click="showSendDialog = false"
+                        >Cancel</v-btn
+                    >
                     <v-btn
-                        color="blue darken-1"
-                        text
+                        color="#1e0c8c"
+                        variant="elevated"
                         @click="sendContractWithEmail"
                     >
                         Send
@@ -170,7 +184,7 @@
 import axios from "axios";
 import { useRouter } from "vue-router";
 import SignatureContract from "../Components/SignatureContract.vue";
-
+const senderEmail = localStorage.getItem("userEmail");
 export default {
     components: {
         SignatureContract,
@@ -203,6 +217,9 @@ export default {
                     sortable: false,
                 },
             ],
+            verifEmail: false,
+            verifSubject: false,
+            verifBody: false,
         };
     },
     mounted() {
@@ -242,10 +259,6 @@ export default {
                 this.viewDialog = true;
             } catch (error) {
                 console.error("Error viewing contract:", error);
-                toast.fire({
-                    icon: "error",
-                    title: "Error viewing contract",
-                });
             }
         },
 
@@ -330,51 +343,51 @@ export default {
                 console.error("Error sending contract:", error);
             }
         },
+        validEmail() {
+            this.verifEmail =
+                this.recipientEmail == "" || !this.recipientEmail.includes("@")
+                    ? true
+                    : false;
+        },
+        validBody() {
+            this.verifBody = this.body == "" ? true : false;
+        },
+        validSubject() {
+            this.verifSubject = this.subject == "" ? true : false;
+        },
         sendContractWithEmail() {
-            const senderEmail = localStorage.getItem("userEmail"); //////////
-            console.log("Sender's Email:", senderEmail);
-            axios
-                .post("/api/contracts/send-contract", {
-                    contract_id: this.contract.id,
-                    recipient_email: this.recipientEmail,
-                    subject: this.subject,
-                    body: this.body,
-                    sender_email: senderEmail, /////////////
-                })
-                .then((response) => {
-                    console.log(response.data.message);
-                    toast.fire({
-                        icon: "success",
-                        title: "Contract sent successfully",
-                    });
-                    this.errors = {};
-                })
-                .catch((error) => {
-                    console.error("Error sending contract:", error);
-                    if (error.response && error.response.status === 422) {
-                        // If validation error, parse the error response and set the errors object
-                        const errorData = error.response.data;
-                        if (errorData.errors) {
-                            // If there are errors for specific fields
-                            this.errors = errorData.errors;
-                        } else if (errorData.error) {
-                            // If there is a general error message
-                            this.errors = { general: [errorData.error] };
-                        }
-                    } else {
-                        console.error("Error sending contract:", error);
+            this.validEmail();
+            this.validBody();
+            this.validSubject();
+
+            if (!this.verifEmail && !this.verifBody && !this.verifSubject) {
+                const senderEmail = localStorage.getItem("userEmail");
+                axios
+                    .post("/api/contracts/send-contract", {
+                        contract_id: this.contract.id,
+                        recipient_email: this.recipientEmail,
+                        subject: this.subject,
+                        body: this.body,
+                        sender_email: senderEmail,
+                    })
+                    .then((response) => {
+                        console.log(response.data.message);
                         toast.fire({
-                            icon: "error",
-                            title: "Error sending contract",
+                            icon: "success",
+                            title: "Contract sent successfully",
                         });
-                    }
-                })
-                .finally(() => {
-                    this.showSendDialog = false;
-                    this.recipientEmail = "";
-                    this.subject = "";
-                    this.body = "";
-                });
+                        this.errors = {};
+                    })
+                    .catch((error) => {
+                        console.error("Error sending contract:", error);
+                    })
+                    .finally(() => {
+                        this.showSendDialog = false;
+                        this.recipientEmail = "";
+                        this.subject = "";
+                        this.body = "";
+                    });
+            }
         },
     },
 };

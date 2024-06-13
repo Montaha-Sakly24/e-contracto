@@ -30,6 +30,7 @@
                                 ref="title"
                                 persistent-placeholder
                                 clearable
+                                :rules="ruleTitle"
                                 :error-messages="errors['title']"
                             ></v-text-field>
                         </v-col>
@@ -132,9 +133,9 @@ export default {
                     ),
             };
         },
-        // ruleTitle() {
-        //     return [(v) => !!v || "Title is required."];
-        // },
+        ruleTitle() {
+            return [(v) => !!v || "Title is required."];
+        },
     },
     mounted() {
         this.getAllPlaceholders();

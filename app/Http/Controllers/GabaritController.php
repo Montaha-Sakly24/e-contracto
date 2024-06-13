@@ -11,8 +11,8 @@ class GabaritController extends Controller
     public function createGabarit(Request $request){
         try {
             $validatedData = $request->validate([
-                'title' => 'required|string|max:25',
-                'content' => 'required|string|max:3000',
+                'title' => 'required|string',
+                'content' => 'required|string',
                 'placeholders' => 'array',
                 'placeholders.*' => 'integer|exists:placeholders,id'
             ]);
@@ -48,8 +48,8 @@ class GabaritController extends Controller
     public function updateGabarit(Request $request, Gabarit $gabarit)
     {
         $validated = $request->validate([
-            'title' => 'required|max:25',
-            'content' => 'required|max:3000',
+            'title' => 'required',
+            'content' => 'required',
             'placeholders' => 'array',
             'placeholders.*' => 'integer|exists:placeholders,id'
         ]);

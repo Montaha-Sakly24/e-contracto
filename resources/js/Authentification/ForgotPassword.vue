@@ -94,9 +94,9 @@ export default {
                     error.response &&
                     error.response.data &&
                     error.response.data.error ===
-                        "Superadministrators cannot reset their passwords."
+                        "Superadministrator cannot reset his password."
                 ) {
-                    alert("Superadministrators cannot reset their passwords.");
+                    alert("Superadministrator cannot reset his password.");
                 } else if (
                     error.response &&
                     error.response.data &&
